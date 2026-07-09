@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# Editor scratch
+*.swp
+*~
+.vscode/
+
+# Generated docs site (built from knowledge/, never committed)
+/_site/
+
+# Session scratch (commit messages, ad-hoc working data)
+/_tmp/
+
+# Claude Code: machine-local settings and locks stay out of git
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+
+# Go build output (the tool runs via `go run`; no binaries are committed)
+/f5w-docgen

@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Least-privilege by default: read-only at the workflow level. Every Action is
+# pinned to a full commit SHA; the `# vX.Y.Z` comment is the human-readable
+# version. CI validates, it never distributes (SEC-17 discipline inherited
+# from footfall): no artifact upload, no deploy, no standing credentials.
+permissions:
+  contents: read
+
+jobs:
+  go:
+    name: f5w-docgen (Go)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - name: Build
+        run: go build ./...
+      - name: Vet
+        run: go vet ./...
+      - name: Format
+        run: test -z "$(gofmt -l .)"
+      - name: Test
+        run: go test ./...
+      - name: Lint own knowledge tree
+        # Dogfood: the tool's own docs are built with the tool. Three tests
+        # that read a consuming repo's live tree skip here by design.
+        run: go run ./cmd/f5w-docgen lint -root knowledge
