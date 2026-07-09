@@ -74,3 +74,11 @@ bd.db
 # They would override fork protection in .git/info/exclude.
 # Config files (metadata.json, config.yaml) are tracked by git by default
 # since no pattern above ignores them.
+
+# Passive JSONL exports (local-only; JSONL export/git-add are off on this repo).
+# bd syncs the issue data AND its change-reason audit trail over refs/dolt/data
+# (the Dolt `events` table), so committing these exports to git is redundant and
+# only creates dirty-tree / merge-conflict friction on every bd op. Recover a
+# JSONL view on demand with `bd export` or by querying the events table.
+issues.jsonl
+interactions.jsonl

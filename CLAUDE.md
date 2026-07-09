@@ -47,13 +47,6 @@ here, never in a consumer.
 - A `git` command must start with `git -C "/Users/frank/Code/f5w-docgen"`;
   never `cd` before git.
 
-## Work tracking
-
-Work is tracked in Beads (`bd`); issue prefix `f5w-docgen-`. Durable
-knowledge goes in `knowledge/` per its README; TaskCreate is the ephemeral
-in-session checklist.
-
-
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:6cd5cc61 -->
 ## Beads Issue Tracker
 
@@ -108,3 +101,42 @@ This protocol applies when ending a Beads implementation workflow. It is subordi
 - Do not commit or push without clear authority from the active profile or the current user request.
 - If a required sync or push is blocked, stop and report the exact command and error.
 <!-- END BEADS INTEGRATION -->
+
+> The managed block above is bd's generic guidance. Two lines in it are
+> **overridden by this CLAUDE.md** (see "Work tracking with Beads" below):
+> TaskCreate IS used as the ephemeral in-session checklist, and this repo has
+> no `bd remember` store - durable knowledge goes in the `knowledge/` tree.
+> On git, this repo follows Frank's standing authorization (global CLAUDE.md
+> "# Git"): a session that produced a meaningful change commits and pushes it
+> without asking each time; this repo runs CI, so ship via branch -> PR ->
+> wait-for-green -> squash-merge (the `ship-pr` skill). An explicit "do not
+> commit/push" in the active turn still wins. Bead data syncs over
+> `refs/dolt/data`, automated by the machine's SessionStart/Stop hooks
+> (`bd dolt pull`/`push`); the passive JSONL exports stay untracked.
+
+## Work tracking with Beads
+
+- **Beads is the durable, cross-session backlog.** Every concrete deliverable -
+  a feature, a bug, a doc, a finding worth keeping - lives in a bead. Source of
+  truth for "what work exists in this project." Issue prefix: `f5w-docgen-<hash>`.
+- **TaskCreate / TodoWrite is the ephemeral in-session checklist.** Useful for
+  sub-steps inside one bead. Disappears when the session ends. Mark items
+  in_progress / completed so Frank can follow along.
+- Anything worth surviving the session goes in a bead, not in TaskCreate.
+- Sub-steps of a single bead are fine in TaskCreate - do not file them as beads.
+- **Always pass `workspace_root: "/Users/frank/Code/f5w-docgen"`** on every
+  beads MCP call so it resolves the right `.beads/` database.
+- **Never mutate without citing why.** Every create / update / close includes a
+  reason tied to a file path, a doc decision, or chat context.
+- The managed block's generic "do NOT use TaskCreate / use bd remember" line is
+  **not policy for this repo - this section is authoritative.** Use TaskCreate
+  as the ephemeral checklist; keep durable knowledge in the `knowledge/` tree.
+
+### Advise the next bead at handoff
+
+When you finish a bead, end the final summary with a recommendation of which
+bead to pick up next. Consult the open backlog (`bd ready` /
+`mcp__beads__ready`, falling back to `bd list --status=open`) and name the most
+sensible next bead - respecting dependencies and priority - with a one-line
+rationale; mention a runner-up if the choice is close. When nothing is ready,
+say so rather than inventing a suggestion.
