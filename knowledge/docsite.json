@@ -1,0 +1,8 @@
+{
+  "title": "f5w-docgen docs",
+  "topbarTitle": "f5w-docgen docs",
+  "groups": [
+    {"name": "Method", "docs": ["wiki/three-layer-knowledge-method"]},
+    {"name": "Guides", "docs": ["frameworks/docs-site-authoring", "frameworks/docs-migration-session-brief"]}
+  ]
+}
