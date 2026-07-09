@@ -24,6 +24,7 @@ import (
 	"github.com/f5websites/f5w-docgen/internal/config"
 	"github.com/f5websites/f5w-docgen/internal/model"
 	"github.com/f5websites/f5w-docgen/internal/tree"
+	"github.com/f5websites/f5w-docgen/internal/version"
 )
 
 // -------------------------------------------------------------------------
@@ -67,8 +68,9 @@ func Check(root string) (Result, error) {
 	known := docIDSet(docs)
 	artifacts := artifactPaths(cfg)
 	changelogHeading := cfg.ChangelogHeading()
+	running := version.Version()
 	for _, doc := range docs {
-		findings = append(findings, docFindings(doc, artifacts, known, changelogHeading)...)
+		findings = append(findings, docFindings(doc, artifacts, known, changelogHeading, running)...)
 	}
 	findings = append(findings, unsortedFindings(cfg, docs)...)
 
@@ -91,8 +93,9 @@ func Check(root string) (Result, error) {
 // link classifier reject a cross-doc link whose target is absent (R15), and the
 // declared artifacts let it tell an artifact reference from an illegal file link.
 // When the changelog opt-in is on (a non-empty heading), the parsed body is also
-// checked against the R26 changelog-section rules.
-func docFindings(doc tree.Doc, artifacts []string, known map[string]bool, changelogHeading string) []Finding {
+// checked against the R26 changelog-section rules. running is the tool's own
+// version, which the guidance-stamp drift check compares against.
+func docFindings(doc tree.Doc, artifacts []string, known map[string]bool, changelogHeading, running string) []Finding {
 	source, err := os.ReadFile(doc.Path)
 	if err != nil {
 		return []Finding{{File: doc.Path, Line: 1, Level: model.LevelError, Message: err.Error()}}
@@ -110,6 +113,7 @@ func docFindings(doc tree.Doc, artifacts []string, known map[string]bool, change
 	if changelogHeading != "" {
 		findings = append(findings, changelogFindings(parsed, changelogHeading, doc.Path)...)
 	}
+	findings = append(findings, driftFindings(source, doc.Path, running)...)
 	return findings
 }
 

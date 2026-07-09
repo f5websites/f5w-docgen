@@ -109,3 +109,48 @@ func TestRun_BuildOnlyFlag(t *testing.T) {
 		}
 	})
 }
+
+func TestRun_Guidance(t *testing.T) {
+	t.Run("writes, is idempotent, and check passes", func(t *testing.T) {
+		root := t.TempDir()
+		var stdout strings.Builder
+		if code := run([]string{"guidance", "-root", root}, &stdout, io.Discard); code != exitOK {
+			t.Fatalf("run(guidance) = %d, want %d", code, exitOK)
+		}
+		if got := stdout.String(); !strings.Contains(got, "created") {
+			t.Errorf("first run output = %q, want created actions", got)
+		}
+		if _, err := os.Stat(filepath.Join(root, "frameworks", "docs-site-authoring.md")); err != nil {
+			t.Errorf("managed authoring doc not written: %v", err)
+		}
+
+		stdout.Reset()
+		if code := run([]string{"guidance", "-root", root}, &stdout, io.Discard); code != exitOK {
+			t.Fatalf("second run(guidance) = %d, want %d", code, exitOK)
+		}
+		if got := stdout.String(); strings.Contains(got, "updated") || strings.Contains(got, "created") {
+			t.Errorf("second run output = %q, want everything unchanged", got)
+		}
+
+		if code := run([]string{"guidance", "-root", root, "-check"}, io.Discard, io.Discard); code != exitOK {
+			t.Fatalf("run(guidance -check) after apply = %d, want %d", code, exitOK)
+		}
+	})
+
+	t.Run("check fails on a fresh root", func(t *testing.T) {
+		root := t.TempDir()
+		var stderr strings.Builder
+		if code := run([]string{"guidance", "-root", root, "-check"}, io.Discard, &stderr); code != exitLintErrors {
+			t.Fatalf("run(guidance -check) on fresh root = %d, want %d", code, exitLintErrors)
+		}
+		if got := stderr.String(); !strings.Contains(got, "docs-guidance") {
+			t.Errorf("stderr = %q, want it to point at make docs-guidance", got)
+		}
+	})
+
+	t.Run("rejects unknown flags", func(t *testing.T) {
+		if code := run([]string{"guidance", "-bogus"}, io.Discard, io.Discard); code != exitUsage {
+			t.Fatalf("run(guidance -bogus) = %d, want %d", code, exitUsage)
+		}
+	})
+}

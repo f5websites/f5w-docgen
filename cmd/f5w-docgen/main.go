@@ -1,8 +1,11 @@
 // Command f5w-docgen renders a repo's knowledge tree into a static, self-hosted
-// docs site. It has two subcommands: build lints the tree and then renders it
-// into an output directory, and lint checks the tree against the authoring
-// contract without emitting anything. Both are driven by flags (the Make targets
-// are the operator interface), and both are configured by <root>/docsite.json.
+// docs site. It has three subcommands: build lints the tree and then renders it
+// into an output directory, lint checks the tree against the authoring contract
+// without emitting anything, and guidance writes the canonical shared guidance
+// docs (embedded in the binary) into a consuming repo. All are driven by flags
+// (the Make targets are the operator interface); build and lint are configured
+// by <root>/docsite.json, guidance deliberately needs no config so a fresh repo
+// can bootstrap its guidance before its site config exists.
 //
 // build runs lint first so a contract error fails the build before a broken site
 // is written; the rendering itself lives in the render package.
@@ -15,9 +18,12 @@ import (
 	"os"
 	"strings"
 
+	canonical "github.com/f5websites/f5w-docgen/guidance"
 	"github.com/f5websites/f5w-docgen/internal/config"
+	"github.com/f5websites/f5w-docgen/internal/guidance"
 	"github.com/f5websites/f5w-docgen/internal/lint"
 	"github.com/f5websites/f5w-docgen/internal/render"
+	"github.com/f5websites/f5w-docgen/internal/version"
 )
 
 // -------------------------------------------------------------------------
@@ -44,8 +50,9 @@ const (
 const usage = `f5w-docgen renders a knowledge tree into a static docs site.
 
 Usage:
-  f5w-docgen build [-root knowledge] [-out _site] [-only ids]   render the site
-  f5w-docgen lint  [-root knowledge] [-strict]                  check the authoring contract`
+  f5w-docgen build    [-root knowledge] [-out _site] [-only ids]   render the site
+  f5w-docgen lint     [-root knowledge] [-strict]                  check the authoring contract
+  f5w-docgen guidance [-root knowledge] [-check]                   write the managed guidance docs`
 
 func main() {
 	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
@@ -63,6 +70,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return runBuild(args[1:], stdout, stderr)
 	case "lint":
 		return runLint(args[1:], stdout, stderr)
+	case "guidance":
+		return runGuidance(args[1:], stdout, stderr)
 	default:
 		fmt.Fprintf(stderr, "unknown subcommand %q\n\n%s\n", args[0], usage)
 		return exitUsage
@@ -153,6 +162,53 @@ func runLint(args []string, stdout, stderr io.Writer) int {
 
 	if result.Errors > 0 || (*strict && result.Warnings > 0) {
 		return exitLintErrors
+	}
+	return exitOK
+}
+
+// runGuidance writes (or, with -check, verifies) the managed guidance docs
+// under the knowledge root from the canonical copies embedded in the binary,
+// stamped with the running tool's version. -check writes nothing and fails
+// when any managed copy is missing or drifted, so a consumer CI can gate on
+// it; malformed README markers fail either mode rather than being rewritten
+// around.
+func runGuidance(args []string, stdout, stderr io.Writer) int {
+	flags := flag.NewFlagSet("guidance", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	root := flags.String("root", defaultRoot, "knowledge tree root to write the managed guidance docs into")
+	check := flags.Bool("check", false, "verify the managed copies match this tool version without writing")
+	if err := flags.Parse(args); err != nil {
+		return exitUsage
+	}
+
+	running := version.Version()
+	if *check {
+		problems, err := guidance.Check(canonical.FS, *root, running)
+		if err != nil {
+			fmt.Fprintln(stderr, err)
+			return exitLintErrors
+		}
+		for _, problem := range problems {
+			fmt.Fprintln(stdout, problem)
+		}
+		if len(problems) > 0 {
+			fmt.Fprintf(stderr, "guidance: %d managed doc(s) missing or drifted in %s; run make docs-guidance\n", len(problems), *root)
+			return exitLintErrors
+		}
+		fmt.Fprintf(stdout, "guidance: managed docs in %s match %s\n", *root, running)
+		return exitOK
+	}
+
+	actions, err := guidance.Apply(canonical.FS, *root, running)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return exitLintErrors
+	}
+	for _, action := range actions {
+		fmt.Fprintf(stdout, "guidance: %s: %s\n", action.Path, action.State)
+		if action.Note != "" {
+			fmt.Fprintf(stdout, "guidance: %s: note: %s\n", action.Path, action.Note)
+		}
 	}
 	return exitOK
 }
