@@ -1,0 +1,137 @@
+{{/*
+Shared partials for the page templates. Block-level partials may carry newlines
+between elements (harmless whitespace between block tags); inline partials
+(spans, span, link) are written tight so no stray whitespace lands mid-prose.
+Every partial runs in HTML text or attribute context, so html/template's
+auto-escaping applies to every interpolated value.
+*/}}
+
+{{/*
+The runtime loads in <head>, not deferred in the footer, so it can apply the
+persisted theme and font scale before the body paints (no flash of the wrong
+theme). The search index is a plain data global with no such ordering need, so it
+stays a deferred footer script.
+*/}}
+{{define "site-head"}}<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.HeadTitle}}</title>
+<link rel="stylesheet" href="{{.Assets.TokensCSS}}">
+<script src="{{.Assets.RuntimeJS}}"></script>{{end}}
+
+{{define "site-scripts"}}<script defer src="{{.SearchIndex}}"></script>{{end}}
+
+{{/*
+The sticky topbar (spec S5), emitted statically on every page. The home link and
+logo are page-relative so they resolve from any depth and under file://. The
+brand is split in Go into a bold wordmark and a faint suffix. The tools slot
+(data-docs-tools) is where the runtime mounts its control cluster (S7); with
+scripting off it stays empty, so no dead control shows.
+*/}}
+{{define "site-topbar"}}<header class="docs-topbar">
+<a class="docs-topbar-home" href="{{.HomeURL}}">
+<img class="docs-topbar-logo" src="{{.LogoURL}}" alt="F5 Websites" width="104" height="23">
+<span class="docs-topbar-title"><span class="docs-topbar-wordmark">{{.Wordmark}}</span>{{if .Suffix}} <span class="docs-topbar-suffix">{{.Suffix}}</span>{{end}}</span>
+</a>
+<div class="docs-topbar-tools" data-docs-tools></div>
+</header>{{end}}
+
+{{define "blocks"}}{{range .}}{{template "block" .}}{{end}}{{end}}
+
+{{/*
+Fold mode (docOptions.fold: h3). A fold-mode doc's body is emitted as a sequence
+of groups: a passthrough group renders its blocks in view (the H1, lede, H2
+headers, and any content above a section's first H3); a folded group renders one
+H3 subtree as a native <details> card, collapsed by default so it opens and
+closes with no scripting. The H3 heading rides in the <summary> with its anchor
+id, so the "On this page" rail, the search index, and every #heading link still
+resolve into a folded doc; the runtime (S7) only reveals a card when navigation
+targets a heading inside a collapsed one.
+*/}}
+{{define "fold-groups"}}{{range .}}{{if .Folded}}{{template "fold-card" .}}{{else}}{{template "blocks" .Blocks}}{{end}}{{end}}{{end}}
+
+{{define "fold-card"}}<details class="fold-card">
+<summary class="fold-summary">{{template "heading" .Heading}}<span class="fold-chevron" aria-hidden="true">⌄</span></summary>
+<div class="fold-body">
+{{template "blocks" .Blocks}}
+</div>
+</details>
+{{end}}
+
+{{define "block"}}
+{{- if eq .Kind "heading"}}{{template "heading" .}}
+{{- else if eq .Kind "paragraph"}}<p>{{template "spans" .Spans}}</p>
+{{- else if eq .Kind "code"}}<pre class="code"{{if .Lang}} data-lang="{{.Lang}}"{{end}}><code>{{.Text}}</code></pre>
+{{- else if eq .Kind "diagram"}}<pre class="diagram">{{.Text}}</pre>
+{{- else if eq .Kind "callout"}}<div class="callout callout-{{.Tone}}" data-tone="{{.Tone}}">{{template "blocks" .Blocks}}</div>
+{{- else if eq .Kind "blockquote"}}<blockquote>{{template "blocks" .Blocks}}</blockquote>
+{{- else if eq .Kind "list"}}{{template "list" .}}
+{{- else if eq .Kind "tasklist"}}<ul class="tasklist">{{range .Items}}<li class="task"><label><input type="checkbox" disabled{{if .Checked}} checked{{end}}> {{template "spans" .Spans}}</label>{{template "blocks" .Blocks}}</li>{{end}}</ul>
+{{- else if eq .Kind "steps"}}<ol class="steps">{{range .Steps}}<li class="step"><span class="step-title">{{.Title}}</span> {{template "spans" .Spans}}{{template "blocks" .Blocks}}</li>{{end}}</ol>
+{{- else if eq .Kind "table"}}{{template "table" .}}
+{{- end}}
+{{end}}
+
+{{/*
+The page title (H1) carries no copy-link — it anchors the top of the page, not a
+section. Every section heading (H2-H6) gets a trailing heading-anchor the runtime
+turns into a copy-link; CSS keeps it hidden until the heading is hovered.
+*/}}
+{{define "heading"}}
+{{- if eq .Level 1}}<h1 id="{{.ID}}">{{template "spans" .Spans}}</h1>
+{{- else if eq .Level 2}}<h2 id="{{.ID}}">{{template "spans" .Spans}}{{template "heading-anchor" .ID}}</h2>
+{{- else if eq .Level 3}}<h3 id="{{.ID}}">{{template "spans" .Spans}}{{template "heading-anchor" .ID}}</h3>
+{{- else if eq .Level 4}}<h4 id="{{.ID}}">{{template "spans" .Spans}}{{template "heading-anchor" .ID}}</h4>
+{{- else if eq .Level 5}}<h5 id="{{.ID}}">{{template "spans" .Spans}}{{template "heading-anchor" .ID}}</h5>
+{{- else}}<h6 id="{{.ID}}">{{template "spans" .Spans}}{{template "heading-anchor" .ID}}</h6>
+{{- end}}
+{{- end}}
+
+{{/*
+The copy-link affordance (footfall-0r4). Dot is the heading's slug id; the href is
+the bare "#slug" so it degrades to a normal in-page jump with scripting off, and
+the runtime resolves it to an absolute deep link for the clipboard. Two icons ride
+inside: the chain link, and a check the runtime reveals for a moment after a copy
+(via the .copied class) - a tooltip-free confirmation.
+*/}}
+{{define "heading-anchor"}}<a class="heading-anchor" href="#{{.}}" aria-label="Copy link to this section"><svg class="heading-anchor-icon heading-anchor-link" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><svg class="heading-anchor-icon heading-anchor-check" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></a>{{end}}
+
+{{define "list"}}
+{{- if .Ordered}}<ol>{{range .Items}}<li>{{template "spans" .Spans}}{{template "blocks" .Blocks}}</li>{{end}}</ol>
+{{- else}}<ul>{{range .Items}}<li>{{template "spans" .Spans}}{{template "blocks" .Blocks}}</li>{{end}}</ul>
+{{- end}}
+{{- end}}
+
+{{define "table"}}{{$align := .Table.Align}}<div class="table-wrap"><table><thead><tr>{{range $i, $cell := .Table.Header}}<th{{with alignClass $align $i}} class="{{.}}"{{end}}>{{template "spans" $cell.Spans}}</th>{{end}}</tr></thead><tbody>{{range .Table.Rows}}<tr>{{range $i, $cell := .}}<td{{with alignClass $align $i}} class="{{.}}"{{end}}>{{template "spans" $cell.Spans}}</td>{{end}}</tr>{{end}}</tbody></table></div>{{end}}
+
+{{define "spans"}}{{range .}}{{template "span" .}}{{end}}{{end}}
+
+{{define "span"}}{{if eq .Kind "text"}}{{.Text}}{{else if eq .Kind "strong"}}<strong>{{.Text}}</strong>{{else if eq .Kind "emphasis"}}<em>{{.Text}}</em>{{else if eq .Kind "strike"}}<del>{{.Text}}</del>{{else if eq .Kind "code"}}<code>{{.Text}}</code>{{else if eq .Kind "verify"}}<mark class="badge-verify" title="unverified">VERIFY{{if .Text}}: {{.Text}}{{end}}</mark>{{else if eq .Kind "link"}}{{template "link" .}}{{end}}{{end}}
+
+{{define "link"}}{{if eq .Rel "doc"}}<a class="ref-doc" href="{{.Href}}">{{template "spans" .Spans}} <span class="ref-arrow" aria-hidden="true">↗</span></a>{{else if eq .Rel "external"}}<a class="ref-external" href="{{.Href}}" rel="noreferrer">{{template "spans" .Spans}} <span class="ref-arrow" aria-hidden="true">↗</span></a>{{else if eq .Rel "section"}}<a class="ref-section" href="{{.Href}}">{{template "spans" .Spans}}</a>{{else if eq .Rel "detail"}}<button type="button" class="detail-ref" data-detail="{{trimHash .Href}}" aria-expanded="false">{{template "spans" .Spans}}<span class="detail-ref-chevron" aria-hidden="true">⌄</span></button>{{else if eq .Rel "raw"}}<span class="ref-chip ref-raw" title="{{.Href}}">{{template "spans" .Spans}}</span>{{else if eq .Rel "artifact"}}<span class="ref-chip ref-artifact" title="{{.Href}}">{{template "spans" .Spans}}</span>{{else if eq .Rel "config"}}<span class="ref-chip ref-config" title="{{.Href}}">{{template "spans" .Spans}}</span>{{else}}<span class="ref-broken">{{template "spans" .Spans}}</span>{{end}}{{end}}
+
+{{define "toc"}}<ul class="toc-list">{{range .}}<li class="toc-section"><a class="toc-link" href="#{{.ID}}">{{.Text}}</a>{{if .Children}}<ul class="toc-sublist">{{range .Children}}<li class="toc-sub"><a class="toc-link" href="#{{.ID}}">{{.Text}}</a></li>{{end}}</ul>{{end}}</li>{{end}}</ul>{{end}}
+
+{{define "related-cards"}}<ul class="related-cards">{{range .}}<li>
+{{- if .Nav}}<a class="related-card {{.RelClass}}" href="{{.URL}}"><span class="related-title">{{.Title}}</span>{{if .Desc}} <span class="related-desc">{{.Desc}}</span>{{end}}</a>
+{{- else}}<span class="related-card"><span class="related-title">{{.Title}}</span>{{if .Desc}} <span class="related-desc">{{.Desc}}</span>{{end}}</span>
+{{- end}}</li>{{end}}</ul>{{end}}
+
+{{define "related-plain"}}<ul class="related-plain">{{range .}}<li>{{template "spans" .Spans}}</li>{{end}}</ul>{{end}}
+
+{{define "orphan-sections"}}{{range .}}<section class="detail-orphan" id="{{.ID}}"><h2 class="detail-orphan-title">{{.Title}}</h2>{{if .Source}}<p class="detail-source">{{.Source}}</p>{{end}}{{template "blocks" .Blocks}}</section>
+{{end}}{{end}}
+
+{{define "detail-card"}}<article class="detail-card"><header class="detail-head"><span class="detail-title">{{.Title}}</span>{{if .Source}}<span class="detail-source">{{.Source}}</span>{{end}}</header><div class="detail-body">{{template "blocks" .Blocks}}</div></article>{{end}}
+
+{{define "detail-templates"}}{{range .}}<template class="detail-node" data-detail="{{.ID}}">{{template "detail-card" .}}</template>
+{{end}}{{end}}
+
+{{/*
+No-JS fallback (spec S7): referenced detail nodes live in inert <template>s the
+runtime unfolds, so with scripting off their content would be invisible. This
+<noscript> appendix re-emits the same cards as a visible list, so the whole doc
+stays readable without scripting. It renders only when scripting is disabled;
+with the runtime active the browser leaves it as inert text.
+*/}}
+{{define "detail-appendix"}}<noscript><section class="detail-appendix" aria-label="Detail cards">{{range .}}{{template "detail-card" .}}
+{{end}}</section></noscript>{{end}}

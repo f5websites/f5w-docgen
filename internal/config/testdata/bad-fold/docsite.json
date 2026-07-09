@@ -1,0 +1,15 @@
+{
+  "title": "sample docs",
+  "topbarTitle": "sample docs",
+  "groups": [
+    {
+      "name": "Guides",
+      "docs": [
+        "wiki/alpha"
+      ]
+    }
+  ],
+  "docOptions": {
+    "wiki/alpha": {"fold": "h2"}
+  }
+}

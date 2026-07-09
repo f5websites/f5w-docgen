@@ -1,0 +1,121 @@
+{
+  "doc": {
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": 1,
+        "id": "table-fixture",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Table fixture"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "A lede paragraph introducing a GFM table with per-column alignment."
+          }
+        ]
+      },
+      {
+        "kind": "table",
+        "table": {
+          "align": [
+            "left",
+            "center",
+            "right"
+          ],
+          "header": [
+            {
+              "spans": [
+                {
+                  "kind": "text",
+                  "text": "Decision"
+                }
+              ]
+            },
+            {
+              "spans": [
+                {
+                  "kind": "text",
+                  "text": "Value"
+                }
+              ]
+            },
+            {
+              "spans": [
+                {
+                  "kind": "text",
+                  "text": "Decided"
+                }
+              ]
+            }
+          ],
+          "rows": [
+            [
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "Generator"
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "Custom Go + goldmark"
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "2026-07-07"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "Output"
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "code",
+                    "text": "_site/"
+                  },
+                  {
+                    "kind": "text",
+                    "text": " at the repo root"
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "This spec"
+                  }
+                ]
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  "findings": null
+}

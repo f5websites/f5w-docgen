@@ -1,0 +1,46 @@
+{
+  "doc": {
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": 1,
+        "id": "fences-fixture",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Fences fixture"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "A lede paragraph introducing the fenced-block cases: a diagram, a tagged code fence, and a bare fence."
+          }
+        ]
+      },
+      {
+        "kind": "diagram",
+        "text": "api/ source ──▶ build ──▶ image"
+      },
+      {
+        "kind": "code",
+        "lang": "go",
+        "text": "func main() {\n\tprintln(\"hello\")\n}"
+      },
+      {
+        "kind": "code",
+        "text": "a bare fence with no language tag"
+      }
+    ]
+  },
+  "findings": [
+    {
+      "line": 17,
+      "level": "warn",
+      "message": "code fence has no language tag (R7: tag every fence)"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "title": "sample docs",
+  "topbarTitle": "sample docs",
+  "groups": [
+    {
+      "name": "Guides",
+      "docs": [
+        "wiki/alpha"
+      ]
+    }
+  ],
+  "changelog": {"heading": ""}
+}

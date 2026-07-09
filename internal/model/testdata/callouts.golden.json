@@ -1,0 +1,161 @@
+{
+  "doc": {
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": 1,
+        "id": "callouts-fixture",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Callouts fixture"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "A lede paragraph so the document shell is well formed and the callouts below each parse in isolation."
+          }
+        ]
+      },
+      {
+        "kind": "callout",
+        "tone": "info",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "An informational note."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "callout",
+        "tone": "tip",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "A helpful tip."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "callout",
+        "tone": "warn",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "A warning worth heeding."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "callout",
+        "tone": "sec",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "A security aside, shown or hidden by the lens."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "callout",
+        "tone": "info",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Maps to the info tone with a nudge."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "callout",
+        "tone": "warn",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Maps to the warn tone with a nudge."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "blockquote",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "[!BOGUS] An unknown tone degrades to a plain quote and errors."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "blockquote",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "A plain blockquote carries no tone."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "line": 18,
+      "level": "warn",
+      "message": "callout tone \"IMPORTANT\" maps to the canonical set (R5: prefer NOTE, TIP, WARNING, or SECURITY)"
+    },
+    {
+      "line": 21,
+      "level": "warn",
+      "message": "callout tone \"CAUTION\" maps to the canonical set (R5: prefer NOTE, TIP, WARNING, or SECURITY)"
+    },
+    {
+      "line": 24,
+      "level": "error",
+      "message": "unknown callout tone \"BOGUS\" (R5: use NOTE, TIP, WARNING, or SECURITY)"
+    }
+  ]
+}

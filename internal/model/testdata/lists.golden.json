@@ -1,0 +1,125 @@
+{
+  "doc": {
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": 1,
+        "id": "lists-fixture",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Lists fixture"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "A lede paragraph introducing a bullet list, an ordered list, and a task list."
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "bullet-list",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Bullet list"
+          }
+        ]
+      },
+      {
+        "kind": "list",
+        "items": [
+          {
+            "spans": [
+              {
+                "kind": "text",
+                "text": "First bullet."
+              }
+            ]
+          },
+          {
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Second bullet."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "ordered-list",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Ordered list"
+          }
+        ]
+      },
+      {
+        "kind": "list",
+        "ordered": true,
+        "items": [
+          {
+            "spans": [
+              {
+                "kind": "text",
+                "text": "First ordered item."
+              }
+            ]
+          },
+          {
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Second ordered item."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "task-list",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Task list"
+          }
+        ]
+      },
+      {
+        "kind": "tasklist",
+        "items": [
+          {
+            "spans": [
+              {
+                "kind": "text",
+                "text": "An unchecked task."
+              }
+            ]
+          },
+          {
+            "checked": true,
+            "spans": [
+              {
+                "kind": "text",
+                "text": "A checked task."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "findings": null
+}

@@ -1,0 +1,7 @@
+{
+  "title": "warn fixture",
+  "topbarTitle": "warn fixture",
+  "groups": [
+    {"name": "Docs", "docs": ["wiki/warn"]}
+  ]
+}

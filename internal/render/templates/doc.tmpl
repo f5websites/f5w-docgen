@@ -1,0 +1,47 @@
+{{define "doc.html"}}<!DOCTYPE html>
+<html lang="en">
+<head>
+{{template "site-head" .}}
+</head>
+<body class="doc" data-root="{{.RootPrefix}}">
+<a class="skip-link" href="#doc-main">Skip to content</a>
+{{template "site-topbar" .Topbar}}
+<div class="layout">
+<main class="col-main" id="doc-main">
+<p class="doc-source">{{.SourcePath}}</p>
+<article class="doc-body{{if .Folded}} doc-folded{{end}}">
+{{if .Folded}}{{template "fold-groups" .Folds}}{{else}}{{template "blocks" .Blocks}}{{end}}
+{{- if .Orphans}}
+{{template "orphan-sections" .Orphans}}
+{{- end}}
+</article>
+{{- if .Changelog}}
+<section class="changelog" aria-label="Changelog">
+{{template "blocks" .Changelog}}
+</section>
+{{- end}}
+{{- if or .RelatedCards .RelatedPlain}}
+<aside class="related" aria-label="Related documents">
+<h2 class="related-heading">Related</h2>
+{{if .RelatedCards}}{{template "related-cards" .RelatedCards}}
+{{end}}{{if .RelatedPlain}}{{template "related-plain" .RelatedPlain}}
+{{end}}</aside>
+{{- end}}
+</main>
+{{- if .TOC}}
+<aside class="col-aside">
+<nav class="toc" aria-label="On this page">
+<p class="toc-heading">On this page</p>
+{{template "toc" .TOC}}
+</nav>
+</aside>
+{{- end}}
+</div>
+{{- if .Details}}
+{{template "detail-templates" .Details}}
+{{template "detail-appendix" .Details}}
+{{- end}}
+{{template "site-scripts" .Assets}}
+</body>
+</html>
+{{end}}

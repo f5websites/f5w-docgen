@@ -1,0 +1,270 @@
+{
+  "doc": {
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": 1,
+        "id": "links-fixture",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Links fixture"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "A lede paragraph introducing every link-classifier arm, including the ones that are contract errors."
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "fragments",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Fragments"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "A "
+          },
+          {
+            "kind": "link",
+            "href": "#a-detail-node",
+            "rel": "detail",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "detail ref"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": ", an "
+          },
+          {
+            "kind": "link",
+            "href": "#fragments",
+            "rel": "section",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "in-page ref"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": ", a "
+          },
+          {
+            "kind": "link",
+            "href": "#a-subsection",
+            "rel": "broken",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "main-body H3 ref"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": ", and a "
+          },
+          {
+            "kind": "link",
+            "href": "#nowhere",
+            "rel": "broken",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "dangling ref"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": "."
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 3,
+        "id": "a-subsection",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "A subsection"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "A main-body subsection whose anchor a drill-down ref may not target."
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "paths",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Paths"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "A "
+          },
+          {
+            "kind": "link",
+            "href": "../wiki/security-plan.md",
+            "rel": "doc",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "cross-doc link"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": ", a "
+          },
+          {
+            "kind": "link",
+            "href": "../raw/audit.md",
+            "rel": "raw",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "raw citation"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": ", an "
+          },
+          {
+            "kind": "link",
+            "href": "footfall-openapi.yaml",
+            "rel": "artifact",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "artifact"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": ", the "
+          },
+          {
+            "kind": "link",
+            "href": "../docsite.json",
+            "rel": "config",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "site config"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": ", an "
+          },
+          {
+            "kind": "link",
+            "href": "https://example.com",
+            "rel": "external",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "external link"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": ", and a "
+          },
+          {
+            "kind": "link",
+            "href": "../../api/Dockerfile",
+            "rel": "broken",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "repo file"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": "."
+          }
+        ]
+      }
+    ],
+    "details": [
+      {
+        "id": "a-detail-node",
+        "title": "A detail node",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Referenced from the Fragments section above."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "line": 9,
+      "level": "error",
+      "message": "fragment \"#a-subsection\" targets a main-body H3; drill-down refs may only point at a detail node or an H2 (R11)"
+    },
+    {
+      "line": 9,
+      "level": "error",
+      "message": "fragment \"#nowhere\" resolves to no heading or detail node in this document (R11)"
+    },
+    {
+      "line": 19,
+      "level": "error",
+      "message": "link destination \"../../api/Dockerfile\" is outside the allowed grammar (R18: only a knowledge .md, a raw/ file, a declared artifact, the docsite.json config, or https://)"
+    }
+  ]
+}

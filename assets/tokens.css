@@ -1,0 +1,889 @@
+/*
+ * tokens.css — the docs site theme: design tokens, the three [data-theme]
+ * palettes, the vendored IBM Plex @font-face rules, and the full v4 layout.
+ *
+ * Three themes ship as [data-theme] blocks: default (defined on :root),
+ * latte, and macchiato. default carries the F5 Websites brand palette
+ * (blue-forward accent, cool brand-aligned neutrals, real brand tones), applied
+ * from footfall-pvq's authoritative values; latte and macchiato are the
+ * published Catppuccin palettes, ported verbatim from the v4 mockup. Nothing
+ * here hardcodes a repo name, and the theme blocks override colors only, so
+ * every non-color token (fonts, spacing, radii, measures) is defined once.
+ *
+ * Fonts: IBM Plex Sans and IBM Plex Mono latin woff2 subsets are vendored
+ * beside this file and copied into _site/assets/ at build (see assets/README.md
+ * for the release versions and the re-vendor procedure). The @font-face rules
+ * below load them by relative sibling path with font-display: swap; the
+ * --font-sans / --font-mono stacks fall back to the system fonts, and code
+ * points outside the vendored subsets fall back through the unicode-range. No
+ * font is ever fetched from a CDN, at build or at runtime.
+ */
+
+/* -------------------------------------------------------------------------
+ * Fonts — vendored IBM Plex latin subsets (see assets/README.md)
+ *
+ * The unicode-range values are IBM's official split-subset boundaries; they are
+ * identical across the weights of a family, so Latin1/2/3 repeat per weight.
+ * ------------------------------------------------------------------------- */
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("IBMPlexSans-Regular-Latin1.woff2") format("woff2");
+  unicode-range: U+0000, U+000D, U+0020-007E, U+00A0-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022, U+2026, U+2030, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+FB01-FB02;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("IBMPlexSans-Regular-Latin2.woff2") format("woff2");
+  unicode-range: U+0100-0101, U+0104-0130, U+0132-0151, U+0154-017F, U+018F, U+0192, U+01A0-01A1, U+01AF-01B0, U+01FA-01FF, U+0218-021B, U+0237, U+0259, U+1E80-1E85, U+1E9E, U+20A1, U+20A4, U+20A6, U+20A8-20AA, U+20AD-20AE, U+20B1-20B2, U+20B4-20B5, U+20B8-20BA, U+20BD, U+20BF;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("IBMPlexSans-Regular-Latin3.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+01CD-01DC, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("IBMPlexSans-SemiBold-Latin1.woff2") format("woff2");
+  unicode-range: U+0000, U+000D, U+0020-007E, U+00A0-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022, U+2026, U+2030, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+FB01-FB02;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("IBMPlexSans-SemiBold-Latin2.woff2") format("woff2");
+  unicode-range: U+0100-0101, U+0104-0130, U+0132-0151, U+0154-017F, U+018F, U+0192, U+01A0-01A1, U+01AF-01B0, U+01FA-01FF, U+0218-021B, U+0237, U+0259, U+1E80-1E85, U+1E9E, U+20A1, U+20A4, U+20A6, U+20A8-20AA, U+20AD-20AE, U+20B1-20B2, U+20B4-20B5, U+20B8-20BA, U+20BD, U+20BF;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("IBMPlexSans-SemiBold-Latin3.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+01CD-01DC, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("IBMPlexSans-Bold-Latin1.woff2") format("woff2");
+  unicode-range: U+0000, U+000D, U+0020-007E, U+00A0-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022, U+2026, U+2030, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+FB01-FB02;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("IBMPlexSans-Bold-Latin2.woff2") format("woff2");
+  unicode-range: U+0100-0101, U+0104-0130, U+0132-0151, U+0154-017F, U+018F, U+0192, U+01A0-01A1, U+01AF-01B0, U+01FA-01FF, U+0218-021B, U+0237, U+0259, U+1E80-1E85, U+1E9E, U+20A1, U+20A4, U+20A6, U+20A8-20AA, U+20AD-20AE, U+20B1-20B2, U+20B4-20B5, U+20B8-20BA, U+20BD, U+20BF;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("IBMPlexSans-Bold-Latin3.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+01CD-01DC, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("IBMPlexMono-Regular-Latin1.woff2") format("woff2");
+  unicode-range: U+0020-007E, U+00A0-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022, U+2026, U+2030, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+FB01-FB02;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("IBMPlexMono-Regular-Latin2.woff2") format("woff2");
+  unicode-range: U+0100-0101, U+0104-0130, U+0132-0151, U+0154-017F, U+018F, U+0192, U+01A0-01A1, U+01AF-01B0, U+01FA-01FF, U+0218-021B, U+0237, U+0259, U+1E80-1E85, U+1E9E, U+20A1, U+20A4, U+20A6, U+20A8-20AA, U+20AD-20AE, U+20B1-20B2, U+20B4-20B5, U+20B8-20BA, U+20BD, U+20BF;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("IBMPlexMono-Regular-Latin3.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+01CD-01DC, U+1E0C-1E0D, U+1E12-1E13, U+1E24-1E25, U+1E36-1E37, U+1E3C-1E3D, U+1E40-1E47, U+1E4A-1E4B, U+1E62-1E63, U+1E6C-1E6D, U+1E70-1E71, U+1E92-1E93, U+1EA0-1EF9, U+20AB;
+}
+
+/* -------------------------------------------------------------------------
+ * Design tokens — default (the default theme; the F5 Websites brand palette,
+ * applied from footfall-pvq). Non-color tokens here are shared by every theme.
+ * ------------------------------------------------------------------------- */
+
+:root,
+[data-theme="default"] {
+  /* Fonts: vendored IBM Plex leads, then the system stack falls back. */
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+
+  --bg: #f7f9fc;            /* faint cool off-white page */
+  --surface: #ffffff;       /* card / panel */
+  --surface-sunk: #eef2f7;  /* code / sunk wells */
+  --text: #1d1e46;          /* F5W wordmark navy — body text (15:1 on --bg) */
+  --muted: #5b6473;         /* cool grey secondary text */
+  --border: #dbe3ec;        /* cool hairline (#8fa9c2 lightened) */
+  --accent: #0d70d3;        /* F5W brand blue — outlines, focus, hover, active */
+  --accent-ink: #0d70d3;    /* link / emphasis text (4.9:1 on white = AA) */
+  --accent-soft: #e3f0fb;   /* pale brand-blue wash — hover / expanded bg */
+  --on-accent: #fff;        /* text on an accent-filled surface (4.9:1 = AA) */
+  --topbar: #ffffff;        /* sticky-topbar background (v4: white-ish light) */
+
+  --tone-info: #00abc6;     /* NOTE — F5W link teal */
+  --tone-tip: #00be6b;      /* TIP — F5W heading green */
+  --tone-warn: #f77e01;     /* WARNING — F5W orange */
+  --tone-sec: #8a4b8f;      /* SECURITY — placeholder purple (brand has no purple) */
+
+  --radius: 10px;
+  --radius-sm: 6px;
+  /* Nominal sticky-topbar height, in px so the reader's font-scale control never
+     resizes the chrome; feeds the rail sticky offset and the anchor
+     scroll-margins so neither slides under the bar. */
+  --topbar-h: 46px;
+  --gap: 1.25rem;
+  --measure: 42rem;         /* readable prose line length */
+  /* Wide measure for code/diagram/table blocks: must fit 90 monospace chars
+     without horizontal scroll (M1 gate amendment, spec S6). 90 chars at IBM
+     Plex Mono (0.6em advance) and the 0.86rem code size need ~46.5rem of text;
+     52rem leaves room for the block's padding and a small margin. */
+  --measure-wide: 52rem;
+  --shadow: 0 1px 2px rgba(43, 38, 34, 0.06), 0 6px 20px rgba(43, 38, 34, 0.05);
+}
+
+/* -------------------------------------------------------------------------
+ * Design tokens — latte and macchiato (the published Catppuccin palettes,
+ * ported verbatim from the v4 mockup). Colors only; every non-color token is
+ * inherited from the default/:root block above.
+ * ------------------------------------------------------------------------- */
+
+[data-theme="latte"] {
+  --bg: #dce0e8;
+  --surface: #eff1f5;
+  --surface-sunk: #e6e9ef;
+  --text: #4c4f69;
+  --muted: #6c6f85;
+  --border: #ccd0da;
+  --accent: #8839ef;
+  --accent-ink: #8839ef;
+  --accent-soft: rgba(136, 57, 239, 0.12);
+  --on-accent: #eff1f5;
+  --topbar: #dce0e8;
+
+  --tone-info: #209fb5;
+  --tone-tip: #40a02b;
+  --tone-warn: #df8e1d;
+  --tone-sec: #7287fd;
+
+  --shadow: 0 1px 2px rgba(76, 79, 105, 0.08), 0 6px 20px rgba(76, 79, 105, 0.10);
+}
+
+[data-theme="macchiato"] {
+  --bg: #181926;
+  --surface: #24273a;
+  --surface-sunk: #1e2030;
+  --text: #cad3f5;
+  --muted: #a5adcb;
+  --border: #363a4f;
+  --accent: #c6a0f6;
+  --accent-ink: #c6a0f6;
+  --accent-soft: rgba(198, 160, 246, 0.16);
+  --on-accent: #24273a;
+  --topbar: #181926;
+
+  --tone-info: #7dc4e4;
+  --tone-tip: #a6da95;
+  --tone-warn: #eed49f;
+  --tone-sec: #b7bdf8;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.30), 0 6px 20px rgba(0, 0, 0, 0.40);
+}
+
+/* -------------------------------------------------------------------------
+ * Base
+ * ------------------------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  /* 1rem = the root font size, which runtime.js scales for the A−/A+ control
+     (spec S7 font scale); at the default 100% this is the 16px browser base, so
+     scale 1 renders identically. Body text is rem-relative so it scales with the
+     rem headings rather than staying pinned. */
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent-ink); }
+
+code, pre, .code, .diagram { font-family: var(--font-mono); }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--accent);
+  color: var(--on-accent);
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-sm);
+  /* Above the sticky topbar (z-index 30) so a focused skip link is not hidden
+     behind the bar. */
+  z-index: 40;
+}
+.skip-link:focus { left: 1rem; top: 1rem; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* -------------------------------------------------------------------------
+ * Sticky topbar (spec S5) — emitted statically on every page: the home link
+ * (logo + brand wordmark) at the left, and the tools slot the runtime fills
+ * (S7) at the right. The bar and its home link size in px, matching the v4
+ * mockup, so the reader's font-scale control never resizes the chrome.
+ * ------------------------------------------------------------------------- */
+
+.docs-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 11px 22px;
+  min-height: var(--topbar-h);
+  background: var(--topbar);
+  border-bottom: 1px solid var(--border);
+}
+
+.docs-topbar-home {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.docs-topbar-home:hover { color: var(--accent-ink); }
+
+.docs-topbar-logo { height: 23px; width: auto; display: block; flex: none; }
+
+.docs-topbar-suffix { color: var(--muted); font-weight: 500; }
+
+/* The tools slot: the runtime mounts the search button, Security lens, theme
+   switcher, and font steppers here (S7). It is empty with scripting off. */
+.docs-topbar-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+/* Macchiato's near-black bar renders the navy logo wordmark illegibly, so the
+   logo sits on a small rounded light chip — the one permitted adaptation (no
+   new artwork, no white logo variant, footfall-edl). */
+[data-theme="macchiato"] .docs-topbar-logo {
+  background: #eff1f5;
+  border-radius: 5px;
+  padding: 2px 5px;
+  box-sizing: content-box;
+}
+
+/* Anchor jumps (TOC links, section search results) land the heading below the
+   sticky bar instead of behind it. */
+.doc-body h1,
+.doc-body h2,
+.doc-body h3,
+.doc-body h4,
+.doc-body h5,
+.doc-body h6 {
+  scroll-margin-top: calc(var(--topbar-h) + 1rem);
+}
+
+/* -------------------------------------------------------------------------
+ * Layout — main column plus an "On this page" rail
+ * ------------------------------------------------------------------------- */
+
+.layout {
+  /* Wide enough that the main column reaches --measure-wide (52rem) beside the
+     15rem "On this page" rail and the 2.5rem gap, so a 90-char code line fits
+     at desktop widths without horizontal scroll (M1 gate amendment, spec S6). */
+  max-width: 73rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 15rem;
+  gap: 2.5rem;
+  align-items: start;
+}
+.home .layout { grid-template-columns: minmax(0, 1fr); }
+
+.col-main { min-width: 0; }
+
+/* The reading column is as wide as a code/diagram block needs; prose narrows to
+   a readable measure while code, diagrams, and tables keep the full width. */
+.doc-body { max-width: var(--measure-wide); }
+.doc-body > h1,
+.doc-body > h2,
+.doc-body > h3,
+.doc-body > h4,
+.doc-body > p,
+.doc-body > ul,
+.doc-body > ol,
+.doc-body > blockquote,
+.doc-body > .callout {
+  max-width: var(--measure);
+}
+
+/* Two columns only while there is room for a full-width code block (52rem) AND
+   the 15rem rail beside it; below that the rail hides and the reading column
+   takes the full width, so a 90-char code line still fits without scroll. */
+@media (max-width: 70rem) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .col-aside { display: none; }
+}
+
+/* -------------------------------------------------------------------------
+ * Prose
+ * ------------------------------------------------------------------------- */
+
+.doc-source {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+  background: var(--surface-sunk);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.15rem 0.55rem;
+  margin: 0 0 1.5rem;
+}
+
+.doc-body h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 0.75rem; }
+.doc-body h2 { font-size: 1.4rem; margin: 2.5rem 0 0.75rem; padding-top: 0.5rem; }
+.doc-body h3 { font-size: 1.12rem; margin: 1.75rem 0 0.5rem; }
+.doc-body h4 { font-size: 1rem; margin: 1.25rem 0 0.4rem; color: var(--muted); }
+.doc-body p { margin: 0 0 1rem; }
+
+/* -------------------------------------------------------------------------
+ * Heading copy-link (Confluence-style, footfall-0r4)
+ * ------------------------------------------------------------------------- */
+
+/* A link icon that appears only while its heading is hovered (or the icon is
+   keyboard-focused) and copies that section's deep link to the clipboard
+   (runtime.js). The heading text keeps the default text cursor - only the icon is
+   a pointer - and there is no tooltip. On a successful copy the runtime briefly
+   adds .copied, swapping the chain icon for a check. The reveal selector is
+   heading-scoped, not .doc-body-scoped, so it also covers the Changelog band
+   (which sits outside .doc-body); no other headings carry a .heading-anchor. */
+.heading-anchor {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.4rem;
+  padding: 0.05em;
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  text-decoration: none;
+  vertical-align: middle;
+  transition: opacity 0.12s ease, color 0.12s ease;
+}
+.heading-anchor-icon { display: block; width: 0.72em; height: 0.72em; }
+.heading-anchor-check { display: none; }
+:is(h2, h3, h4, h5, h6):hover > .heading-anchor,
+.heading-anchor:focus-visible {
+  opacity: 1;
+}
+.heading-anchor:hover { color: var(--accent); }
+.heading-anchor.copied {
+  opacity: 1;
+  color: var(--tone-tip);
+}
+.heading-anchor.copied .heading-anchor-link { display: none; }
+.heading-anchor.copied .heading-anchor-check { display: block; }
+.doc-body ul, .doc-body ol { margin: 0 0 1rem; padding-left: 1.4rem; }
+.doc-body li { margin: 0.25rem 0; }
+
+.doc-body :not(pre) > code {
+  background: var(--surface-sunk);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.88em;
+}
+
+.code, .diagram {
+  background: var(--surface-sunk);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.9rem 1rem;
+  margin: 0 0 1rem;
+  overflow-x: auto;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+.diagram { color: var(--muted); }
+
+blockquote {
+  margin: 0 0 1rem;
+  padding: 0.5rem 1rem;
+  border-left: 3px solid var(--border);
+  color: var(--muted);
+}
+
+.callout {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--tone, var(--accent));
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0.9rem 1.1rem;
+  margin: 0 0 1rem;
+}
+.callout > :last-child { margin-bottom: 0; }
+.callout-info { --tone: var(--tone-info); }
+.callout-tip  { --tone: var(--tone-tip); }
+.callout-warn { --tone: var(--tone-warn); }
+.callout-sec  { --tone: var(--tone-sec); }
+
+.steps { list-style: none; padding-left: 0; counter-reset: step; }
+.steps .step { counter-increment: step; margin: 0.4rem 0; }
+.steps .step-title { font-weight: 600; color: var(--accent-ink); margin-right: 0.4rem; }
+.tasklist { list-style: none; padding-left: 0.2rem; }
+.tasklist .task { margin: 0.25rem 0; }
+
+.table-wrap { overflow-x: auto; margin: 0 0 1rem; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { border: 1px solid var(--border); padding: 0.45rem 0.65rem; text-align: left; }
+th { background: var(--surface-sunk); }
+.col-left { text-align: left; } .col-center { text-align: center; } .col-right { text-align: right; }
+
+.badge-verify {
+  background: #fff3cd;
+  color: #7a5a00;
+  border-radius: 4px;
+  padding: 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* -------------------------------------------------------------------------
+ * Reference links and chips
+ * ------------------------------------------------------------------------- */
+
+.ref-doc, .ref-external, .ref-section { text-decoration: none; border-bottom: 1px solid var(--accent-soft); }
+.ref-doc:hover, .ref-external:hover, .ref-section:hover { border-bottom-color: var(--accent); }
+.ref-arrow { font-size: 0.8em; color: var(--muted); }
+
+.ref-chip {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  color: var(--muted);
+  background: var(--surface-sunk);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 0.35rem;
+}
+.ref-broken { color: #b23; border-bottom: 1px dotted #b23; }
+
+/* -------------------------------------------------------------------------
+ * The signature interaction — a dotted term unfolds a detail card in place
+ * ------------------------------------------------------------------------- */
+
+.detail-ref {
+  font: inherit;
+  color: var(--accent-ink);
+  background: none;
+  border: none;
+  border-bottom: 1px dotted var(--accent);
+  padding: 0;
+  cursor: pointer;
+}
+.detail-ref:hover { background: var(--accent-soft); }
+.detail-ref-chevron {
+  display: inline-block;
+  font-size: 0.7em;
+  margin-left: 0.15em;
+  transition: transform 0.15s ease;
+}
+.detail-ref[aria-expanded="true"] .detail-ref-chevron { transform: rotate(180deg); }
+.detail-ref[aria-expanded="true"] { background: var(--accent-soft); }
+
+.detail-card {
+  margin: 0.75rem 0 1rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  animation: detail-unfold 0.18s ease;
+}
+/* Nested cards step in so a drill-down chain reads as depth. */
+.detail-card .detail-card { border-left-color: var(--tone-sec); }
+
+@keyframes detail-unfold {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .detail-card { animation: none; }
+  .detail-ref-chevron { transition: none; }
+}
+
+.detail-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  background: var(--surface-sunk);
+  border-bottom: 1px solid var(--border);
+}
+.detail-title { font-weight: 600; }
+.detail-source { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+.detail-body { padding: 0.9rem 1rem; }
+.detail-body > :last-child { margin-bottom: 0; }
+
+.detail-orphan {
+  margin: 1.5rem 0;
+  padding: 1rem 1.1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.detail-orphan-title { margin-top: 0; font-size: 1.05rem; }
+
+/* -------------------------------------------------------------------------
+ * Fold mode (docOptions.fold: h3)
+ *
+ * Each H3 subtree of a fold-mode doc is a native <details> card, collapsed by
+ * default (progressive disclosure for long ADR-style docs). The H3 heading rides
+ * in the <summary>; the default disclosure triangle is replaced by the same
+ * chevron the detail cards use, rotating when the card is open.
+ * ------------------------------------------------------------------------- */
+
+.fold-card {
+  margin: 0.6rem 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+.fold-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.55rem 1rem;
+  background: var(--surface-sunk);
+  cursor: pointer;
+  list-style: none; /* hide the default disclosure triangle (Firefox/Chrome) */
+}
+.fold-summary::-webkit-details-marker { display: none; } /* and Safari */
+.fold-summary:hover { background: var(--accent-soft); }
+.fold-summary :is(h1, h2, h3, h4, h5, h6) {
+  flex: 1;
+  margin: 0;
+  font-size: 1.05rem;
+}
+.fold-chevron {
+  color: var(--muted);
+  font-size: 0.8em;
+  transition: transform 0.15s ease;
+}
+.fold-card[open] .fold-summary { border-bottom: 1px solid var(--border); }
+.fold-card[open] .fold-chevron { transform: rotate(180deg); }
+.fold-body { padding: 0.9rem 1rem; }
+.fold-body > :last-child { margin-bottom: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .fold-chevron { transition: none; }
+}
+
+/* -------------------------------------------------------------------------
+ * "On this page" rail
+ * ------------------------------------------------------------------------- */
+
+/* Sticks below the topbar (--topbar-h) rather than the viewport edge, so the
+   rail does not slide under the bar as the page scrolls. */
+.col-aside { position: sticky; top: calc(var(--topbar-h) + 1rem); }
+.toc-heading {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+.toc-list, .toc-sublist { list-style: none; margin: 0; padding: 0; }
+.toc-sublist { margin-left: 0.9rem; }
+.toc-section { margin: 0.3rem 0; }
+.toc-link {
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 0.86rem;
+  border-left: 2px solid transparent;
+  padding-left: 0.6rem;
+  display: block;
+}
+.toc-link:hover { color: var(--accent-ink); border-left-color: var(--accent); }
+
+/* -------------------------------------------------------------------------
+ * Related documents
+ * ------------------------------------------------------------------------- */
+
+.related { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+.related-heading { font-size: 1.05rem; margin: 0 0 0.75rem; }
+.related-cards, .related-plain { list-style: none; margin: 0; padding: 0; }
+.related-cards li { margin: 0.4rem 0; }
+.related-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0.7rem 0.9rem;
+}
+a.related-card:hover { border-color: var(--accent); }
+.related-title { font-weight: 600; color: var(--accent-ink); }
+.related-desc { display: block; color: var(--muted); font-size: 0.9rem; }
+
+/* -------------------------------------------------------------------------
+ * Changelog — the per-doc ## Changelog band (docsite.json "changelog" opt-in).
+ * A bordered card with an accent left edge, distinct from the surrounding prose
+ * but themed entirely through the tokens; the Date | Change table inside renders
+ * through the normal .table-wrap/table rules.
+ * ------------------------------------------------------------------------- */
+
+.changelog {
+  margin-top: 3rem;
+  padding: 1.1rem 1.3rem;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.changelog > h2 { font-size: 1.05rem; }
+.changelog > :first-child { margin-top: 0; }
+.changelog > :last-child { margin-bottom: 0; }
+
+/* -------------------------------------------------------------------------
+ * Home
+ * ------------------------------------------------------------------------- */
+
+.home-title { font-size: 2.2rem; margin: 0 0 0.5rem; }
+.home-hint { color: var(--muted); margin: 0 0 2.5rem; }
+.home-group { margin-bottom: 2.5rem; }
+.home-group-title { font-size: 1.15rem; margin: 0 0 1rem; }
+.home-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--gap);
+}
+.home-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 1rem 1.1rem;
+}
+a.home-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.home-card-title { font-weight: 600; font-size: 1.05rem; color: var(--accent-ink); }
+.home-card-lede { color: var(--muted); font-size: 0.92rem; }
+.home-card-sections, .home-card-version {
+  margin-top: auto;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.home-card-artifact { border-style: dashed; }
+
+/* -------------------------------------------------------------------------
+ * Browser-runtime chrome (spec S7) — the control cluster (search, Security
+ * lens, theme switcher, font steppers), search overlay, and scroll-to-top
+ * control. Every element here is injected by runtime.js, so none of it renders
+ * without scripting; the styles are themed entirely through the tokens above.
+ * The control cluster mounts into the static topbar's tools slot
+ * (.docs-topbar-tools, S5) rather than a floating corner toolbar. A shared
+ * control face keeps the buttons, the select, and the font steppers consistent.
+ * ------------------------------------------------------------------------- */
+
+/* The lens: runtime.js sets docs-lens-off on the body, which hides the security
+   asides (the callouts tagged data-tone="sec"), including any inside a detail
+   card unfolded while the lens is off. */
+.docs-lens-off [data-tone="sec"] { display: none; }
+
+.docs-tool {
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  line-height: 1;
+}
+.docs-tool:hover { border-color: var(--accent); }
+
+.docs-kbd {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: var(--surface-sunk);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+}
+
+/* The field-style search affordance (v4): reads as an input, not a button. */
+.docs-tool-search { min-width: 12rem; justify-content: space-between; color: var(--muted); }
+
+.docs-tool-lens[aria-pressed="true"] {
+  color: var(--tone-sec);
+  border-color: var(--tone-sec);
+  background: var(--accent-soft);
+}
+.docs-lens-mark { font-size: 0.7rem; }
+.docs-lens-state { font-family: var(--font-mono); font-size: 0.68rem; opacity: 0.85; }
+
+.docs-theme-select { padding-right: 0.4rem; }
+
+.docs-font { display: inline-flex; gap: 0.25rem; }
+.docs-font-btn { font-weight: 600; min-width: 2rem; justify-content: center; padding: 0.35rem 0.45rem; }
+
+.docs-scrolltop {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 30;
+  width: 2.6rem;
+  height: 2.6rem;
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+.docs-scrolltop:hover { border-color: var(--accent); }
+
+/* Search overlay — a modal backdrop and a centered panel over the emitted index. */
+.docs-search {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 5rem 1rem 1rem;
+  background: rgba(0, 0, 0, 0.35);
+}
+.docs-search[hidden] { display: none; }
+
+.docs-search-panel {
+  width: 100%;
+  max-width: 35rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+}
+.docs-search-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.docs-search-icon { color: var(--muted); }
+.docs-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: none;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--text);
+}
+.docs-search-results { list-style: none; margin: 0; padding: 0.4rem; max-height: 21rem; overflow: auto; }
+.docs-search-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  font: inherit;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: inherit;
+}
+.docs-search-row:hover, .docs-search-row:focus-visible { background: var(--surface-sunk); }
+.docs-search-kind {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+}
+.docs-search-text { flex: 1; min-width: 0; }
+.docs-search-title { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.docs-search-sub { display: block; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.docs-search-enter { flex: none; color: var(--muted); }
+.docs-search-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-scrolltop { scroll-behavior: auto; }
+}

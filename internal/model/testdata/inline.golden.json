@@ -1,0 +1,106 @@
+{
+  "doc": {
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": 1,
+        "id": "inline-fixture",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Inline fixture"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "A lede paragraph introducing the inline span kinds."
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "This paragraph carries "
+          },
+          {
+            "kind": "strong",
+            "text": "bold"
+          },
+          {
+            "kind": "text",
+            "text": ", "
+          },
+          {
+            "kind": "emphasis",
+            "text": "italic"
+          },
+          {
+            "kind": "text",
+            "text": ", "
+          },
+          {
+            "kind": "strike",
+            "text": "struck"
+          },
+          {
+            "kind": "text",
+            "text": ", and "
+          },
+          {
+            "kind": "code",
+            "text": "code"
+          },
+          {
+            "kind": "text",
+            "text": ", an "
+          },
+          {
+            "kind": "link",
+            "href": "https://example.com",
+            "rel": "external",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "external label with "
+              },
+              {
+                "kind": "code",
+                "text": "code"
+              },
+              {
+                "kind": "text",
+                "text": " inside"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": " link whose text mixes plain and code runs, plus a bare "
+          },
+          {
+            "kind": "verify"
+          },
+          {
+            "kind": "text",
+            "text": " badge and a "
+          },
+          {
+            "kind": "verify",
+            "text": "item name"
+          },
+          {
+            "kind": "text",
+            "text": " badge with a note."
+          }
+        ]
+      }
+    ]
+  },
+  "findings": null
+}

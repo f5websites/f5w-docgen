@@ -1,0 +1,25 @@
+{
+  "title": "sample docs",
+  "topbarTitle": "sample docs",
+  "groups": [
+    {
+      "name": "Guides",
+      "docs": [
+        "wiki/alpha",
+        "frameworks/beta"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "frameworks/contract.yaml",
+      "title": "Sample contract",
+      "lede": "A sample non-markdown artifact that gets its own home card.",
+      "extract": "info.version"
+    }
+  ],
+  "docOptions": {
+    "wiki/alpha": {"fold": "h3"}
+  },
+  "changelog": {"heading": "Changelog"}
+}

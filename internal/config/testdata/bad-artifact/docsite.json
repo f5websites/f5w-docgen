@@ -1,0 +1,13 @@
+{
+  "title": "sample docs",
+  "topbarTitle": "sample docs",
+  "groups": [],
+  "artifacts": [
+    {
+      "path": "frameworks/ghost.yaml",
+      "title": "Ghost contract",
+      "lede": "Declares an artifact whose file does not exist on disk.",
+      "extract": "info.version"
+    }
+  ]
+}

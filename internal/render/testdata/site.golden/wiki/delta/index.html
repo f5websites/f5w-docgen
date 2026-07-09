@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delta decisions</title>
+<link rel="stylesheet" href="../../assets/tokens.css">
+<script src="../../assets/runtime.js"></script>
+</head>
+<body class="doc" data-root="../../">
+<a class="skip-link" href="#doc-main">Skip to content</a>
+<header class="docs-topbar">
+<a class="docs-topbar-home" href="../../index.html">
+<img class="docs-topbar-logo" src="../../assets/f5websites-logo.svg" alt="F5 Websites" width="104" height="23">
+<span class="docs-topbar-title"><span class="docs-topbar-wordmark">Sample</span> <span class="docs-topbar-suffix">docs</span></span>
+</a>
+<div class="docs-topbar-tools" data-docs-tools></div>
+</header>
+<div class="layout">
+<main class="col-main" id="doc-main">
+<p class="doc-source">wiki/delta.md</p>
+<article class="doc-body doc-folded">
+<h1 id="delta-decisions">Delta decisions</h1>
+<p>A short ADR-style sample whose H3 subsections fold into cards, so the golden locks fold-mode emission end to end.</p>
+<h2 id="decisions">Decisions<a class="heading-anchor" href="#decisions" aria-label="Copy link to this section"><svg class="heading-anchor-icon heading-anchor-link" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><svg class="heading-anchor-icon heading-anchor-check" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></a></h2>
+<p>This section intro stays in view; only the decisions below fold into cards.</p>
+<details class="fold-card">
+<summary class="fold-summary"><h3 id="d1---adopt-fold-mode">D1 - Adopt fold mode<a class="heading-anchor" href="#d1---adopt-fold-mode" aria-label="Copy link to this section"><svg class="heading-anchor-icon heading-anchor-link" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><svg class="heading-anchor-icon heading-anchor-check" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></a></h3><span class="fold-chevron" aria-hidden="true">⌄</span></summary>
+<div class="fold-body">
+<p>Fold mode collapses each H3 subtree behind a summary, so a long decision log scans as a list of titles.</p>
+<div class="callout callout-info" data-tone="info"><p>A callout inside a folded card, proving nested blocks ride along.</p>
+</div>
+
+</div>
+</details>
+<details class="fold-card">
+<summary class="fold-summary"><h3 id="d2---keep-the-markdown-flat">D2 - Keep the markdown flat<a class="heading-anchor" href="#d2---keep-the-markdown-flat" aria-label="Copy link to this section"><svg class="heading-anchor-icon heading-anchor-link" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><svg class="heading-anchor-icon heading-anchor-check" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></a></h3><span class="fold-chevron" aria-hidden="true">⌄</span></summary>
+<div class="fold-body">
+<p>The doc stays plain CommonMark; only the site folds it.</p>
+<h4 id="a-finer-point">A finer point<a class="heading-anchor" href="#a-finer-point" aria-label="Copy link to this section"><svg class="heading-anchor-icon heading-anchor-link" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><svg class="heading-anchor-icon heading-anchor-check" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></a></h4>
+<p>An H4 under a folded H3 stays inside the card, since it is deeper than the fold level.</p>
+
+</div>
+</details>
+<h2 id="status">Status<a class="heading-anchor" href="#status" aria-label="Copy link to this section"><svg class="heading-anchor-icon heading-anchor-link" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><svg class="heading-anchor-icon heading-anchor-check" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></a></h2>
+<p>A section with no subsections stays fully in view, with no fold card.</p>
+
+</article>
+</main>
+<aside class="col-aside">
+<nav class="toc" aria-label="On this page">
+<p class="toc-heading">On this page</p>
+<ul class="toc-list"><li class="toc-section"><a class="toc-link" href="#decisions">Decisions</a><ul class="toc-sublist"><li class="toc-sub"><a class="toc-link" href="#d1---adopt-fold-mode">D1 - Adopt fold mode</a></li><li class="toc-sub"><a class="toc-link" href="#d2---keep-the-markdown-flat">D2 - Keep the markdown flat</a></li></ul></li><li class="toc-section"><a class="toc-link" href="#status">Status</a></li></ul>
+</nav>
+</aside>
+</div>
+<script defer src="../../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+{
+  "doc": {
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": 1,
+        "id": "details-fixture",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Details fixture"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "A lede paragraph introducing a layered document: a main thread that drills into detail nodes, and a terminal Details appendix."
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "main-section",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Main section"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "See "
+          },
+          {
+            "kind": "link",
+            "href": "#the-mechanism",
+            "rel": "detail",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "the mechanism"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": " for how it works, and jump to "
+          },
+          {
+            "kind": "link",
+            "href": "#another-section",
+            "rel": "section",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "another section"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": " in the main thread."
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "another-section",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Another section"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "More main-thread prose."
+          }
+        ]
+      }
+    ],
+    "related": [
+      {
+        "title": "Security plan",
+        "href": "../wiki/security-plan.md",
+        "rel": "doc",
+        "desc": "the ADR this fixture references."
+      },
+      {
+        "spans": [
+          {
+            "kind": "text",
+            "text": "SEC-14 (signed update channel) - a plain bullet that is not a doc link."
+          }
+        ]
+      }
+    ],
+    "details": [
+      {
+        "id": "the-mechanism",
+        "title": "The mechanism",
+        "source": "scripts/example.sh",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "The mechanism explained, drilling further into "
+              },
+              {
+                "kind": "link",
+                "href": "#a-nested-node",
+                "rel": "detail",
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "a nested node"
+                  }
+                ]
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "a-nested-node",
+        "title": "A nested node",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "The nested node body attributes to the owning document."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "an-orphan-node",
+        "title": "An orphan node",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "This node is authored but never referenced from anywhere."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "line": 32,
+      "level": "warn",
+      "message": "detail node \"an-orphan-node\" is not reachable by drill-down from the main thread (R14: orphan nodes render as a plain appended section)"
+    }
+  ]
+}

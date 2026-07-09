@@ -1,0 +1,138 @@
+{
+  "doc": {
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": 1,
+        "id": "steps-fixture",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Steps fixture"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "A lede paragraph introducing three ordered/bulleted lists that exercise steps detection and its plain fallback."
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "a-real-step-sequence",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "A real step sequence"
+          }
+        ]
+      },
+      {
+        "kind": "steps",
+        "steps": [
+          {
+            "title": "Stop the bleeding.",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Do not sign anything else with the lost key."
+              }
+            ]
+          },
+          {
+            "title": "Assemble the replacement.",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Retrieve the offline reserve or mint a fresh key."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "an-ordered-list-that-is-not-steps",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "An ordered list that is not steps"
+          }
+        ]
+      },
+      {
+        "kind": "list",
+        "ordered": true,
+        "items": [
+          {
+            "spans": [
+              {
+                "kind": "strong",
+                "text": "A bolded first item"
+              },
+              {
+                "kind": "text",
+                "text": " that leads with strong text."
+              }
+            ]
+          },
+          {
+            "spans": [
+              {
+                "kind": "text",
+                "text": "A plain item with no bold lead, which makes the whole list render plain."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "a-bullet-list-with-bold-leads",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "A bullet list with bold leads"
+          }
+        ]
+      },
+      {
+        "kind": "list",
+        "items": [
+          {
+            "spans": [
+              {
+                "kind": "strong",
+                "text": "Packaging"
+              },
+              {
+                "kind": "text",
+                "text": " wraps the binary in an immutable image."
+              }
+            ]
+          },
+          {
+            "spans": [
+              {
+                "kind": "strong",
+                "text": "Hermetic build"
+              },
+              {
+                "kind": "text",
+                "text": " pins the toolchain so it compiles the same way anywhere."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "findings": null
+}

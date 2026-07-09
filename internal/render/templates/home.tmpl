@@ -1,0 +1,39 @@
+{{define "home.html"}}<!DOCTYPE html>
+<html lang="en">
+<head>
+{{template "site-head" .}}
+</head>
+<body class="home" data-root="">
+{{template "site-topbar" .Topbar}}
+<div class="layout">
+<main class="col-main home-main">
+<h1 class="home-title">{{.Title}}</h1>
+<p class="home-hint">Dotted terms in a document unfold a detail card in place — no page change.</p>
+{{range .Groups}}<section class="home-group">
+<h2 class="home-group-title">{{.Name}}</h2>
+<div class="home-cards">
+{{range .Cards}}<a class="home-card" href="{{.URL}}">
+<span class="home-card-title">{{.Title}}</span>
+<span class="home-card-lede">{{.Lede}}</span>
+<span class="home-card-sections">{{.Sections}} section{{if ne .Sections 1}}s{{end}}</span>
+</a>
+{{end}}</div>
+</section>
+{{end}}
+{{- if .Artifacts}}<section class="home-group home-artifacts">
+<h2 class="home-group-title">Artifacts</h2>
+<div class="home-cards">
+{{range .Artifacts}}<div class="home-card home-card-artifact">
+<span class="home-card-title">{{.Title}}</span>
+<span class="home-card-lede">{{.Lede}}</span>
+{{if .Version}}<span class="home-card-version">{{.Version}}</span>{{end}}
+</div>
+{{end}}</div>
+</section>
+{{end}}
+</main>
+</div>
+{{template "site-scripts" .Assets}}
+</body>
+</html>
+{{end}}

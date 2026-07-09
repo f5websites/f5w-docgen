@@ -1,0 +1,1397 @@
+{
+  "doc": {
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": 1,
+        "id": "footfall-api-image-build-and-deploy",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Footfall API image: build and deploy"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "How the Footfall Go API becomes a running container on the droplet, and the one-command path for building and deploying it repeatably."
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Status: actionable runbook. The container topology decision is recorded in "
+          },
+          {
+            "kind": "link",
+            "href": "../wiki/wp-umami-stats-plugin.md",
+            "rel": "doc",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "the plan's deployment section"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": " (footfall-x0i)."
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "the-split",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "The split"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "The split is firm: "
+          },
+          {
+            "kind": "strong",
+            "text": "this repo builds the image; ansible deploys it."
+          },
+          {
+            "kind": "text",
+            "text": " The build half (source -\u003e image -\u003e tarball) lives here; the deploy half (tarball -\u003e running container on the VPS) is the "
+          },
+          {
+            "kind": "link",
+            "href": "#the-ansible-stats_api-role",
+            "rel": "detail",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "ansible "
+              },
+              {
+                "kind": "code",
+                "text": "stats_api"
+              },
+              {
+                "kind": "text",
+                "text": " role"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": " (footfall-uvc)."
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "what-docker-is-doing-here",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "What Docker is doing here"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "The API compiles to a single static binary with no runtime dependencies, so Docker is not here to supply a dependency environment. It does three jobs:"
+          }
+        ]
+      },
+      {
+        "kind": "list",
+        "items": [
+          {
+            "spans": [
+              {
+                "kind": "strong",
+                "text": "Packaging"
+              },
+              {
+                "kind": "text",
+                "text": " - wraps the binary in an immutable, content-addressed image: one versioned artifact that is byte-identical wherever it runs, so the droplet runs exactly what was built."
+              }
+            ]
+          },
+          {
+            "spans": [
+              {
+                "kind": "strong",
+                "text": "Hermetic build"
+              },
+              {
+                "kind": "text",
+                "text": " - the multi-stage "
+              },
+              {
+                "kind": "code",
+                "text": "api/Dockerfile"
+              },
+              {
+                "kind": "text",
+                "text": " pins the toolchain ("
+              },
+              {
+                "kind": "code",
+                "text": "golang:1.26-alpine"
+              },
+              {
+                "kind": "text",
+                "text": "), so the binary compiles the same way regardless of the host's Go version, or its absence (Carl has no local Go - Docker supplies it)."
+              }
+            ]
+          },
+          {
+            "spans": [
+              {
+                "kind": "strong",
+                "text": "Deployment unit"
+              },
+              {
+                "kind": "text",
+                "text": " - the image is what the droplet's "
+              },
+              {
+                "kind": "code",
+                "text": "docker compose"
+              },
+              {
+                "kind": "text",
+                "text": " runs, on the internal proxy network with config and secrets injected by ansible. An update is \"load a new image, recreate the container\" - atomic and reversible."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "the-pipeline-end-to-end",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "The pipeline, end to end"
+          }
+        ]
+      },
+      {
+        "kind": "diagram",
+        "text": "api/ source ──▶ [build stage]      cross-compile static linux/amd64 binary\n                                   (native on the builder's arch, no emulation)\n            ──▶ [final stage]      copy binary onto distroless/static:nonroot ──▶ image\n            ──▶ docker save        image ──▶ footfall-\u003csha\u003e.tar.gz   (the artifact)\n            ──▶ transfer           tarball ──▶ VPS                    ┐\n            ──▶ docker load        tarball ──▶ image on the VPS       │ ansible\n            ──▶ docker compose up  image ──▶ running container        │ (footfall-uvc)\n            ──▶ Uptime Kuma        GET /v1/health  (runtime gate)     ┘"
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Source in, image artifact out, running container on the droplet. Everything left of "
+          },
+          {
+            "kind": "code",
+            "text": "transfer"
+          },
+          {
+            "kind": "text",
+            "text": " is this repo; everything from "
+          },
+          {
+            "kind": "code",
+            "text": "transfer"
+          },
+          {
+            "kind": "text",
+            "text": " rightward is "
+          },
+          {
+            "kind": "link",
+            "href": "#the-ansible-stats_api-role",
+            "rel": "detail",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "ansible"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": "."
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "build-host-carl-not-the-mac",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Build host: Carl, not the Mac"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "The image is built on "
+          },
+          {
+            "kind": "strong",
+            "text": "Carl"
+          },
+          {
+            "kind": "text",
+            "text": " (the Debian build VM where Docker lives), keeping the heavy build tooling off the Mac; the deploy is orchestrated from the Mac, which SSHes into Carl. Delivery is "
+          },
+          {
+            "kind": "link",
+            "href": "#registry-free-delivery",
+            "rel": "detail",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "registry-free"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": ". Carl is arm64 and the droplet is amd64, which is fine and needs no second VM - see "
+          },
+          {
+            "kind": "link",
+            "href": "#cross-compiling-amd64-on-arm64-carl",
+            "rel": "detail",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "cross-compiling amd64 on arm64"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": "."
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "building",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Building"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Local build (wherever Docker runs, for inspection):"
+          }
+        ]
+      },
+      {
+        "kind": "code",
+        "lang": "zsh",
+        "text": "make image          # builds api/Dockerfile -\u003e footfall:\u003cgit-sha\u003e + footfall:latest"
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Repeatable remote build on Carl, orchestrated from the Mac:"
+          }
+        ]
+      },
+      {
+        "kind": "code",
+        "lang": "zsh",
+        "text": "make image-remote            # builds main on Carl, saves footfall-\u003csha\u003e.tar.gz\nmake image-remote REF=\u003cref\u003e  # build a specific branch/tag/commit instead"
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "code",
+            "text": "make image-remote"
+          },
+          {
+            "kind": "text",
+            "text": " runs "
+          },
+          {
+            "kind": "link",
+            "href": "#build-image-on-carlsh",
+            "rel": "detail",
+            "spans": [
+              {
+                "kind": "code",
+                "text": "build-image-on-carl.sh"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": ", which SSHes into Carl, "
+          },
+          {
+            "kind": "strong",
+            "text": "refuses to build a dirty checkout"
+          },
+          {
+            "kind": "text",
+            "text": ", syncs it, runs "
+          },
+          {
+            "kind": "code",
+            "text": "make image"
+          },
+          {
+            "kind": "text",
+            "text": ", and saves "
+          },
+          {
+            "kind": "code",
+            "text": "footfall-\u003csha\u003e.tar.gz"
+          },
+          {
+            "kind": "text",
+            "text": " beside the checkout - the artifact the "
+          },
+          {
+            "kind": "link",
+            "href": "#the-ansible-stats_api-role",
+            "rel": "detail",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "ansible role"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": " loads on the VPS."
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "deploying",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Deploying"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Deploy is ansible's job (footfall-uvc), not this repo's - the "
+          },
+          {
+            "kind": "link",
+            "href": "#the-ansible-stats_api-role",
+            "rel": "detail",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "ansible "
+              },
+              {
+                "kind": "code",
+                "text": "stats_api"
+              },
+              {
+                "kind": "text",
+                "text": " role"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": " carries it. The footfall half is the "
+          },
+          {
+            "kind": "code",
+            "text": "make deploy"
+          },
+          {
+            "kind": "text",
+            "text": " wrapper ("
+          },
+          {
+            "kind": "code",
+            "text": "scripts/deploy.sh"
+          },
+          {
+            "kind": "text",
+            "text": "), which runs from the Mac only:"
+          }
+        ]
+      },
+      {
+        "kind": "code",
+        "lang": "zsh",
+        "text": "make deploy                              # build on Carl, deploy to the default remote host\nFOOTFALL_DEPLOY_LIMIT=\u003chost\u003e make deploy # a specific inventory host\nFOOTFALL_DEPLOY_CHECK=1 make deploy      # --check dry-run (skips the build)"
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Three things it guarantees:"
+          }
+        ]
+      },
+      {
+        "kind": "list",
+        "items": [
+          {
+            "spans": [
+              {
+                "kind": "strong",
+                "text": "Remote-only guard."
+              },
+              {
+                "kind": "text",
+                "text": " It refuses "
+              },
+              {
+                "kind": "code",
+                "text": "localhost"
+              },
+              {
+                "kind": "text",
+                "text": ", "
+              },
+              {
+                "kind": "code",
+                "text": "127.0.0.1"
+              },
+              {
+                "kind": "text",
+                "text": ", "
+              },
+              {
+                "kind": "code",
+                "text": "::1"
+              },
+              {
+                "kind": "text",
+                "text": ", and any "
+              },
+              {
+                "kind": "code",
+                "text": ".test"
+              },
+              {
+                "kind": "text",
+                "text": " host before doing anything, so a deploy can never target the local WP test site. The default target is the "
+              },
+              {
+                "kind": "code",
+                "text": "f5w-services"
+              },
+              {
+                "kind": "text",
+                "text": " prod host."
+              }
+            ]
+          },
+          {
+            "spans": [
+              {
+                "kind": "strong",
+                "text": "Role-presence preflight."
+              },
+              {
+                "kind": "text",
+                "text": " If "
+              },
+              {
+                "kind": "code",
+                "text": "roles/stats_api"
+              },
+              {
+                "kind": "text",
+                "text": " is absent in the ansible repo it fails fast with a pointer to the queued ansible prompt - so until the role lands, "
+              },
+              {
+                "kind": "code",
+                "text": "make deploy"
+              },
+              {
+                "kind": "text",
+                "text": " errors clearly rather than half-deploying. This is why footfall-uvc stays open until both halves merge."
+              }
+            ]
+          },
+          {
+            "spans": [
+              {
+                "kind": "strong",
+                "text": "Image handoff (footfall_image_ref)."
+              },
+              {
+                "kind": "text",
+                "text": " It builds "
+              },
+              {
+                "kind": "code",
+                "text": "footfall-\u003csha\u003e.tar.gz"
+              },
+              {
+                "kind": "text",
+                "text": " on Carl, reads the build's "
+              },
+              {
+                "kind": "code",
+                "text": "FOOTFALL_BUILD_SHA"
+              },
+              {
+                "kind": "text",
+                "text": " marker, and passes "
+              },
+              {
+                "kind": "code",
+                "text": "-e footfall_image_ref=\u003csha\u003e"
+              },
+              {
+                "kind": "text",
+                "text": " to the playbook. The role reads that variable to fetch the exact matching tarball from Carl - the single, explicit contract between the two halves (documented in "
+              },
+              {
+                "kind": "code",
+                "text": "ansible/PROMPTS.md"
+              },
+              {
+                "kind": "text",
+                "text": ")."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "link",
+            "href": "#deploy-knobs-and-secrets",
+            "rel": "detail",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Knobs and secrets"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": " are env vars defined once in the script; a real deploy needs 1Password ready. Deploying today is a "
+          },
+          {
+            "kind": "link",
+            "href": "#restart-in-place-not-blue-green",
+            "rel": "detail",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "restart-in-place, not blue-green"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": ": a brief outage window each deploy, tracked as footfall-ryk."
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "gotcha",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Gotcha"
+          }
+        ]
+      },
+      {
+        "kind": "callout",
+        "tone": "warn",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "The Mac cannot build while "
+              },
+              {
+                "kind": "link",
+                "href": "#little-snitch-blocks-colima",
+                "rel": "detail",
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "Little Snitch blocks colima"
+                  }
+                ]
+              },
+              {
+                "kind": "text",
+                "text": ". Since the chosen build host is Carl, this only matters if you deliberately build on the Mac."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "changelog",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Changelog"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Only the most important changes to this runbook are listed here - new deploy capabilities, host or secret requirements, and known operational gaps - newest first. Refactors and internal doc tooling are omitted."
+          }
+        ]
+      },
+      {
+        "kind": "table",
+        "table": {
+          "header": [
+            {
+              "spans": [
+                {
+                  "kind": "text",
+                  "text": "Date"
+                }
+              ]
+            },
+            {
+              "spans": [
+                {
+                  "kind": "text",
+                  "text": "Change"
+                }
+              ]
+            }
+          ],
+          "rows": [
+            [
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "2026-07-05"
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "Deploy now runs under 1Password: the "
+                  },
+                  {
+                    "kind": "code",
+                    "text": "stats_api"
+                  },
+                  {
+                    "kind": "text",
+                    "text": " playbook runs under "
+                  },
+                  {
+                    "kind": "code",
+                    "text": "op run"
+                  },
+                  {
+                    "kind": "text",
+                    "text": " so the "
+                  },
+                  {
+                    "kind": "code",
+                    "text": "op://"
+                  },
+                  {
+                    "kind": "text",
+                    "text": " config it references (the view-only Umami password) resolves; a real deploy needs the "
+                  },
+                  {
+                    "kind": "code",
+                    "text": "op"
+                  },
+                  {
+                    "kind": "text",
+                    "text": " CLI and the ansible repo's "
+                  },
+                  {
+                    "kind": "code",
+                    "text": ".op-env"
+                  },
+                  {
+                    "kind": "text",
+                    "text": " ready (footfall-uvc)."
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "2026-07-04"
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "Remote-only "
+                  },
+                  {
+                    "kind": "code",
+                    "text": "make deploy"
+                  },
+                  {
+                    "kind": "text",
+                    "text": " wrapper added (the deploy half): a Mac-only wrapper that refuses local/"
+                  },
+                  {
+                    "kind": "code",
+                    "text": ".test"
+                  },
+                  {
+                    "kind": "text",
+                    "text": " targets, preflights the ansible role's presence, and hands the built image to ansible via "
+                  },
+                  {
+                    "kind": "code",
+                    "text": "footfall_image_ref"
+                  },
+                  {
+                    "kind": "text",
+                    "text": " (footfall-uvc)."
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "2026-07-01"
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "Zero-downtime cutover flagged as a gap: deploying is restart-in-place with a brief outage window each deploy; the health-gated blue-green cutover is tracked separately and not yet built (footfall-ryk)."
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "2026-06-16"
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "Runbook created with remote build on Carl: "
+                  },
+                  {
+                    "kind": "code",
+                    "text": "make image-remote"
+                  },
+                  {
+                    "kind": "text",
+                    "text": " builds on Carl (arm64, cross-compiling amd64) and saves the "
+                  },
+                  {
+                    "kind": "code",
+                    "text": "footfall-\u003csha\u003e.tar.gz"
+                  },
+                  {
+                    "kind": "text",
+                    "text": " artifact ansible loads on the VPS (footfall-98i)."
+                  }
+                ]
+              }
+            ]
+          ]
+        }
+      }
+    ],
+    "related": [
+      {
+        "title": "Local end-to-end stats runbook",
+        "href": "local-end-to-end-stats-runbook.md",
+        "rel": "doc",
+        "desc": "prove the read path end-to-end with Footfall running locally, before it is ever containerized."
+      },
+      {
+        "title": "Release-signing key custody and recovery runbook",
+        "href": "release-signing.md",
+        "rel": "doc",
+        "desc": "the custody discipline around the other deliverable's ship path (the signed plugin)."
+      }
+    ],
+    "details": [
+      {
+        "id": "the-ansible-stats_api-role",
+        "title": "The ansible stats_api role",
+        "source": "ansible repo, footfall-uvc",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Deploy is ansible's job, not this repo's. The role takes the tarball, "
+              },
+              {
+                "kind": "code",
+                "text": "docker load"
+              },
+              {
+                "kind": "text",
+                "text": "s it on the VPS, templates config from group_vars, and runs the container on the internal proxy network with no published ports."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "registry-free-delivery",
+        "title": "Registry-free delivery",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "No registry to host or authenticate against: the image is saved to a tarball and shipped to the VPS over SSH ("
+              },
+              {
+                "kind": "code",
+                "text": "docker save"
+              },
+              {
+                "kind": "text",
+                "text": " -\u003e "
+              },
+              {
+                "kind": "code",
+                "text": "docker load"
+              },
+              {
+                "kind": "text",
+                "text": ")."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cross-compiling-amd64-on-arm64-carl",
+        "title": "Cross-compiling amd64 on arm64 Carl",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Carl is arm64; the droplet is amd64. This is fine and needs no second VM:"
+              }
+            ]
+          },
+          {
+            "kind": "list",
+            "items": [
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "Go cross-compiles natively with CGO disabled - the build stage runs on arm64 at full speed and emits an amd64 binary, no QEMU."
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "Assembling the amd64 image only copies the binary onto the amd64 distroless base - moving layer bytes, never executing amd64 code."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "The one thing arm64 cannot do is "
+              },
+              {
+                "kind": "emphasis",
+                "text": "run"
+              },
+              {
+                "kind": "text",
+                "text": " the amd64 image. You do not need to: the droplet runs it, and "
+              },
+              {
+                "kind": "code",
+                "text": "GET /v1/health"
+              },
+              {
+                "kind": "text",
+                "text": " (Uptime Kuma) is the runtime gate. If you ever want one anyway, see the "
+              },
+              {
+                "kind": "link",
+                "href": "#local-amd64-smoke-test-optional",
+                "rel": "detail",
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "local amd64 smoke test"
+                  }
+                ]
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "local-amd64-smoke-test-optional",
+        "title": "Local amd64 smoke test (optional)",
+        "source": "binfmt",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Install binfmt on Carl ("
+              },
+              {
+                "kind": "code",
+                "text": "docker run --privileged tonistiigi/binfmt --install amd64"
+              },
+              {
+                "kind": "text",
+                "text": ") and run with "
+              },
+              {
+                "kind": "code",
+                "text": "docker run --platform linux/amd64"
+              },
+              {
+                "kind": "text",
+                "text": "; emulated, slow, fine for a health check."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "build-image-on-carlsh",
+        "title": "build-image-on-carl.sh",
+        "source": "scripts/build-image-on-carl.sh",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "SSHes into Carl, refuses to build a dirty checkout, syncs it ("
+              },
+              {
+                "kind": "code",
+                "text": "git pull"
+              },
+              {
+                "kind": "text",
+                "text": " + "
+              },
+              {
+                "kind": "code",
+                "text": "bd dolt pull"
+              },
+              {
+                "kind": "text",
+                "text": "), runs "
+              },
+              {
+                "kind": "code",
+                "text": "make image"
+              },
+              {
+                "kind": "text",
+                "text": ", and "
+              },
+              {
+                "kind": "code",
+                "text": "docker save"
+              },
+              {
+                "kind": "text",
+                "text": "s the result to "
+              },
+              {
+                "kind": "code",
+                "text": "footfall-\u003csha\u003e.tar.gz"
+              },
+              {
+                "kind": "text",
+                "text": " in a directory beside the checkout. Config is overridable via "
+              },
+              {
+                "kind": "code",
+                "text": "FOOTFALL_BUILD_HOST"
+              },
+              {
+                "kind": "text",
+                "text": ", "
+              },
+              {
+                "kind": "code",
+                "text": "FOOTFALL_BUILD_REPO"
+              },
+              {
+                "kind": "text",
+                "text": ", "
+              },
+              {
+                "kind": "code",
+                "text": "FOOTFALL_ARTIFACT_DIR"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "deploy-knobs-and-secrets",
+        "title": "Deploy knobs and secrets",
+        "source": "scripts/deploy.sh",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Knobs are env vars defined once in the script ("
+              },
+              {
+                "kind": "code",
+                "text": "FOOTFALL_DEPLOY_LIMIT"
+              },
+              {
+                "kind": "text",
+                "text": ", "
+              },
+              {
+                "kind": "code",
+                "text": "FOOTFALL_DEPLOY_TAG"
+              },
+              {
+                "kind": "text",
+                "text": ", "
+              },
+              {
+                "kind": "code",
+                "text": "FOOTFALL_DEPLOY_PLAYBOOK"
+              },
+              {
+                "kind": "text",
+                "text": ", "
+              },
+              {
+                "kind": "code",
+                "text": "FOOTFALL_ANSIBLE_DIR"
+              },
+              {
+                "kind": "text",
+                "text": ", "
+              },
+              {
+                "kind": "code",
+                "text": "FOOTFALL_DEPLOY_CHECK"
+              },
+              {
+                "kind": "text",
+                "text": "); the playbook runs from the ansible repo so its "
+              },
+              {
+                "kind": "code",
+                "text": "ansible.cfg"
+              },
+              {
+                "kind": "text",
+                "text": ", "
+              },
+              {
+                "kind": "code",
+                "text": "roles_path"
+              },
+              {
+                "kind": "text",
+                "text": ", and inventory resolve normally."
+              }
+            ]
+          },
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Secrets: the playbook runs under "
+              },
+              {
+                "kind": "code",
+                "text": "op run --env-file=.op-env"
+              },
+              {
+                "kind": "text",
+                "text": " (the ansible repo's convention), so 1Password resolves the "
+              },
+              {
+                "kind": "code",
+                "text": "op://"
+              },
+              {
+                "kind": "text",
+                "text": " config the role's group_vars reference - notably the view-only Umami password. "
+              },
+              {
+                "kind": "code",
+                "text": "make deploy"
+              },
+              {
+                "kind": "text",
+                "text": " therefore needs the "
+              },
+              {
+                "kind": "code",
+                "text": "op"
+              },
+              {
+                "kind": "text",
+                "text": " CLI and the ansible repo's "
+              },
+              {
+                "kind": "code",
+                "text": ".op-env"
+              },
+              {
+                "kind": "text",
+                "text": ", both checked in preflight. This is also why a real deploy (like any ansible run here) needs 1Password ready."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "restart-in-place-not-blue-green",
+        "title": "Restart-in-place, not blue-green",
+        "source": "footfall-ryk",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "As designed today, deploying is a container restart-in-place ("
+              },
+              {
+                "kind": "code",
+                "text": "docker compose\nup"
+              },
+              {
+                "kind": "text",
+                "text": "/"
+              },
+              {
+                "kind": "code",
+                "text": "restart"
+              },
+              {
+                "kind": "text",
+                "text": ", the same pattern the "
+              },
+              {
+                "kind": "code",
+                "text": "umami"
+              },
+              {
+                "kind": "text",
+                "text": " role already uses), which has a brief outage window each deploy and no automatic fallback if the new image fails to come up healthy. A health-gated blue-green cutover - start the new container alongside the old one, poll "
+              },
+              {
+                "kind": "code",
+                "text": "GET /v1/health"
+              },
+              {
+                "kind": "text",
+                "text": ", then atomically swap the Caddy-facing network alias before removing the old container - is tracked separately as footfall-ryk, depends on the ansible "
+              },
+              {
+                "kind": "code",
+                "text": "stats_api"
+              },
+              {
+                "kind": "text",
+                "text": " role existing, and is not yet built into this runbook's deploy plan."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "little-snitch-blocks-colima",
+        "title": "Little Snitch blocks colima",
+        "source": "Mac-only gotcha",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "macOS has no Linux kernel, so the Mac's Docker runs inside a "
+              },
+              {
+                "kind": "strong",
+                "text": "colima"
+              },
+              {
+                "kind": "text",
+                "text": " Linux VM (Lima + Apple's Virtualization.framework) hosting the daemon; the "
+              },
+              {
+                "kind": "code",
+                "text": "docker"
+              },
+              {
+                "kind": "text",
+                "text": " CLI talks to it over a socket. When a build pulls base images, the daemon inside the VM reaches registries ("
+              },
+              {
+                "kind": "code",
+                "text": "docker.io"
+              },
+              {
+                "kind": "text",
+                "text": ", "
+              },
+              {
+                "kind": "code",
+                "text": "gcr.io"
+              },
+              {
+                "kind": "text",
+                "text": ") through a networking helper that egresses via the Mac's stack. "
+              },
+              {
+                "kind": "strong",
+                "text": "Little Snitch"
+              },
+              {
+                "kind": "text",
+                "text": ", a per-process firewall, blocks that helper, and the build fails with "
+              },
+              {
+                "kind": "code",
+                "text": "connection refused"
+              },
+              {
+                "kind": "text",
+                "text": " from inside the VM - not a colima bug, a firewall rule. To build on the Mac, allow the colima/Lima networking process in Little Snitch (check its log for the denied connection to "
+              },
+              {
+                "kind": "code",
+                "text": "registry-1.docker.io"
+              },
+              {
+                "kind": "text",
+                "text": "/"
+              },
+              {
+                "kind": "code",
+                "text": "gcr.io"
+              },
+              {
+                "kind": "text",
+                "text": ")."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "findings": null
+}
