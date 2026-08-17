@@ -124,6 +124,20 @@ This protocol applies when ending a Beads implementation workflow. It is subordi
   in_progress / completed so Frank can follow along.
 - Anything worth surviving the session goes in a bead, not in TaskCreate.
 - Sub-steps of a single bead are fine in TaskCreate - do not file them as beads.
+- **Wrap bead text at 76 characters.** `bd show` re-wraps `description`,
+  `design`, `notes` and `acceptance` into a fixed box of
+  `min(terminal columns, 100) - 4` usable columns. Widening the terminal past
+  100 changes nothing - that cap is why the overflow looks unfixable - and with
+  output piped (any agent reading `bd show`) bd ignores `COLUMNS` and assumes
+  80, leaving **76**. That is the narrowest case, so author against it. Past 76
+  bd reflows: the last word or two orphan onto their own line, bullets lose
+  their hanging indent, and fenced blocks lose their fences and reflow as prose,
+  so a long command stops being copy-pasteable. Budget 74 inside a code block
+  (its first line is indented 4) and split long commands with `\`. Storage is
+  untouched - this is rendering only. Titles are the exception: never wrapped or
+  truncated at any width, so a long one genuinely runs off the screen in
+  `bd list`; keep titles under ~60 to hold a row inside 80 columns. (Measured on
+  bd 1.1.2, 2026-08-17.)
 - **Always pass `workspace_root: "/Users/frank/Code/f5w-docgen"`** on every
   beads MCP call so it resolves the right `.beads/` database.
 - **Never mutate without citing why.** Every create / update / close includes a
