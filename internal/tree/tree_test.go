@@ -1,11 +1,12 @@
 package tree
 
 import (
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
+
+	"github.com/f5websites/f5w-docgen/internal/testenv"
 )
 
 // TestLoad_Happy asserts a well-formed tree loads every layer's docs, sorted by
@@ -86,23 +87,25 @@ func TestParseShell_MissingLedeAtEOF(t *testing.T) {
 	}
 }
 
-// TestLoad_LiveSeed asserts the repo's own knowledge tree loads with no shell
-// errors and every doc carries a title and lede - a contract test keeping the
-// loader honest against the migrated, lint-clean tree (a loader that rejects it
-// has a loader bug). It skips when the tree is absent, so the loader stays
-// portable to the generator's own repo (spec S9).
-func TestLoad_LiveSeed(t *testing.T) {
-	root := filepath.Join("..", "..", "..", "..", "knowledge")
-	if _, err := os.Stat(filepath.Join(root, "wiki")); err != nil {
-		t.Skipf("live knowledge tree not present (%v); skipping", err)
+// TestLoad_SeedTree asserts a whole, well-formed knowledge tree loads with no
+// shell errors and every doc carries a title and lede - a contract test keeping
+// the loader honest against a real tree, since a loader that rejects one has a
+// loader bug. It reads the checked-in fixture tree by default and a consumer's
+// live tree when F5W_DOCGEN_LIVE_TREE names one, so the loader stays portable to
+// the generator's own repo (spec S9) without the coverage lapsing there.
+func TestLoad_SeedTree(t *testing.T) {
+	root, live, err := testenv.KnowledgeRoot()
+	if err != nil {
+		t.Fatal(err)
 	}
+	t.Logf("loading knowledge tree at %s (live consumer tree: %t)", root, live)
 
 	docs, err := Load(root)
 	if err != nil {
-		t.Fatalf("Load(live seed) returned error: %v", err)
+		t.Fatalf("Load(seed tree) returned error: %v", err)
 	}
 	if len(docs) == 0 {
-		t.Fatal("live seed discovered no docs")
+		t.Fatal("seed tree discovered no docs")
 	}
 	for _, doc := range docs {
 		if doc.Title == "" {

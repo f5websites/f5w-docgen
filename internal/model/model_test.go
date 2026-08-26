@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/f5websites/f5w-docgen/internal/testenv"
 )
 
 // update regenerates the golden fixtures instead of asserting against them:
@@ -48,25 +50,67 @@ func TestGoldenFixtures(t *testing.T) {
 	}
 }
 
-// TestFlagshipFixtures parses the two flagship runbooks end to end and locks the
-// whole pipeline against a golden. It reads the live knowledge tree so an edit to
-// either runbook, or to the parser, fails here; it skips when the tree is absent
-// so the generator stays portable to its own repo (spec S9).
+// flagship is one whole-document parse locked against a golden - the strongest
+// end-to-end check in the package, since a single document exercises every pass
+// at once. Artifact is the doc's declared artifact, so the link classifier can
+// grade an artifact reference in that tree.
+type flagship struct {
+	name     string
+	docID    string
+	artifact string
+}
+
+// fixtureFlagships is the runbook this repo owns. Because its input is checked in
+// here, its parse is locked byte-for-byte against a golden - and it is what keeps
+// this test covered in a repo that ships no consumer.
+var fixtureFlagships = []flagship{
+	{"example-runbook", "frameworks/example-runbook", "frameworks/example-contract.yaml"},
+}
+
+// liveFlagships are runbooks read from the consumer tree named by
+// testenv.LiveTreeEnv. Their content belongs to that repo and changes without
+// notice, so they are deliberately NOT golden-compared: a reworded paragraph
+// there is not a defect here, and snapshotting it would copy another repo's
+// operational detail into this one. They assert parse health instead (see
+// assertParsesClean), which still catches a parser regression against real-world
+// documents. A consumer that carries neither doc skips both cases rather than
+// failing: the generator is repo-neutral and cannot require any doc to exist.
+var liveFlagships = []flagship{
+	{"footfall-image-build-deploy", "frameworks/footfall-image-build-deploy", artifactPath},
+	{"release-signing", "frameworks/release-signing", artifactPath},
+}
+
+// TestFlagshipFixtures parses whole runbooks end to end - the one test that puts
+// every pass through a single realistic document. What it asserts depends on who
+// owns the input: the checked-in fixture is locked against a golden, while a
+// consumer's live tree (named by F5W_DOCGEN_LIVE_TREE) is only checked for parse
+// health, since this repo does not own that content. The generator thus stays
+// portable to its own repo (spec S9) without the coverage lapsing there.
 func TestFlagshipFixtures(t *testing.T) {
-	cases := []struct {
-		name  string
-		docID string
-	}{
-		{"footfall-image-build-deploy", "frameworks/footfall-image-build-deploy"},
-		{"release-signing", "frameworks/release-signing"},
+	root, live, err := testenv.KnowledgeRoot()
+	if err != nil {
+		t.Fatal(err)
 	}
+	cases := fixtureFlagships
+	if live {
+		cases = liveFlagships
+	}
+	t.Logf("parsing flagship runbooks from %s (live consumer tree: %t)", root, live)
+
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			source, err := os.ReadFile(filepath.Join(knowledgeFrameworks(), tc.name+".md"))
+			source, err := os.ReadFile(filepath.Join(root, "frameworks", tc.name+".md"))
 			if err != nil {
-				t.Skipf("flagship doc %s not present (%v); skipping", tc.name, err)
+				if !live {
+					t.Fatalf("fixture runbook %s is missing from the fixture tree: %v", tc.name, err)
+				}
+				t.Skipf("flagship doc %s not present in the live tree (%v); skipping", tc.name, err)
 			}
-			doc, findings := Parse(source, Options{DocID: tc.docID, Artifacts: []string{artifactPath}})
+			doc, findings := Parse(source, Options{DocID: tc.docID, Artifacts: []string{tc.artifact}})
+			if live {
+				assertParsesClean(t, tc.name, doc, findings)
+				return
+			}
 			assertGolden(t, "flagship-"+tc.name+".golden.json", doc, findings)
 		})
 	}
@@ -107,6 +151,22 @@ func assertGolden(t *testing.T, name string, doc Doc, findings []Finding) {
 	}
 }
 
+// assertParsesClean asserts a document this repo does not own parsed into a usable
+// model and raised no contract finding. It is the strongest assertion available
+// against content that can change without notice: a parser regression surfaces as
+// a lost model or a spurious finding, while an ordinary edit to the document does
+// not fail the test. Every finding is reported, not just the first, so one run
+// shows the whole picture.
+func assertParsesClean(t *testing.T, name string, doc Doc, findings []Finding) {
+	t.Helper()
+	if len(doc.Blocks) == 0 {
+		t.Errorf("%s parsed into an empty block stream", name)
+	}
+	for _, finding := range findings {
+		t.Errorf("%s:%d raised a %s finding: %s", name, finding.Line, finding.Level, finding.Message)
+	}
+}
+
 // readFixture reads a fixture markdown file from testdata.
 func readFixture(t *testing.T, name string) []byte {
 	t.Helper()
@@ -115,12 +175,6 @@ func readFixture(t *testing.T, name string) []byte {
 		t.Fatalf("read fixture %s: %v", name, err)
 	}
 	return source
-}
-
-// knowledgeFrameworks is the live knowledge/frameworks directory, four levels up
-// from this package, where the flagship runbooks live.
-func knowledgeFrameworks() string {
-	return filepath.Join("..", "..", "..", "..", "knowledge", "frameworks")
 }
 
 // -------------------------------------------------------------------------

@@ -31,8 +31,13 @@ here, never in a consumer.
 ## Rules
 
 - **Repo-neutral binary.** Nothing outside `docsite.json` and a consumer's
-  Makefile may hardcode a consuming repo's name. The three tests that read a
-  consumer's live tree skip when it is absent - keep it that way.
+  Makefile may hardcode a consuming repo's name. The three whole-tree contract
+  tests (`tree` and `config` `TestLoad_SeedTree`, `model`
+  `TestFlagshipFixtures`) read the checked-in fixture tree at
+  `internal/testdata/seed/` by default, and a consumer's real tree only when
+  `F5W_DOCGEN_LIVE_TREE` names one. Keep that split, and keep the live-tree
+  arm asserting parse health only - never a golden, because this repo does not
+  own a consumer's doc content and must not snapshot it.
 - **Guidance is versioned with the tool.** Any change to `guidance/*.md`
   ships in a release; consumers pick it up when they bump their pin and
   rerun `make docs-guidance` in the same change (pull-on-pin-bump is

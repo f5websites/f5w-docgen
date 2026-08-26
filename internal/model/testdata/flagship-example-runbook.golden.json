@@ -1,0 +1,512 @@
+{
+  "doc": {
+    "blocks": [
+      {
+        "kind": "heading",
+        "level": 1,
+        "id": "example-build-and-deploy-runbook",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Example build-and-deploy runbook"
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "A trimmed stand-in for a real flagship runbook: it exercises the whole parse pipeline in one document - callouts, steps, fences, a diagram, a table, a task list, a changelog, related links and drill-down detail nodes."
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "before-you-start",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Before you start"
+          }
+        ]
+      },
+      {
+        "kind": "callout",
+        "tone": "info",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "This document is a test fixture. Nothing here deploys anything."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "The ceremony assumes three things are already true:"
+          }
+        ]
+      },
+      {
+        "kind": "list",
+        "items": [
+          {
+            "spans": [
+              {
+                "kind": "strong",
+                "text": "A clean tree."
+              },
+              {
+                "kind": "text",
+                "text": " No uncommitted work, so the build is reproducible."
+              }
+            ]
+          },
+          {
+            "spans": [
+              {
+                "kind": "strong",
+                "text": "A pinned toolchain."
+              },
+              {
+                "kind": "text",
+                "text": " The compiler version is fixed, not whatever is on the machine - see "
+              },
+              {
+                "kind": "link",
+                "href": "#why-the-build-is-hermetic",
+                "rel": "detail",
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "why the build is hermetic"
+                  }
+                ]
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "spans": [
+              {
+                "kind": "strong",
+                "text": "A reachable target."
+              },
+              {
+                "kind": "text",
+                "text": " The host answers, and the credentials are loaded."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "the-ceremony",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "The ceremony"
+          }
+        ]
+      },
+      {
+        "kind": "steps",
+        "steps": [
+          {
+            "title": "Build the image.",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Compile from the pinned toolchain and tag the result with the content hash, never with "
+              },
+              {
+                "kind": "code",
+                "text": "latest"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "title": "Stage the release.",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Copy the built tree into a content-addressed release directory beside the live one, leaving the live tree untouched."
+              }
+            ]
+          },
+          {
+            "title": "Swap it in.",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Flip the symlink in a single atomic rename, so a reader never observes a half-written tree - see "
+              },
+              {
+                "kind": "link",
+                "href": "#how-the-swap-stays-atomic",
+                "rel": "detail",
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "how the swap stays atomic"
+                  }
+                ]
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "code",
+        "lang": "zsh",
+        "text": "make build\nmake deploy"
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "what-the-pipeline-does",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "What the pipeline does"
+          }
+        ]
+      },
+      {
+        "kind": "diagram",
+        "text": "source -\u003e build -\u003e stage -\u003e swap -\u003e live"
+      },
+      {
+        "kind": "table",
+        "table": {
+          "header": [
+            {
+              "spans": [
+                {
+                  "kind": "text",
+                  "text": "Stage"
+                }
+              ]
+            },
+            {
+              "spans": [
+                {
+                  "kind": "text",
+                  "text": "Writes to"
+                }
+              ]
+            },
+            {
+              "spans": [
+                {
+                  "kind": "text",
+                  "text": "Reversible"
+                }
+              ]
+            }
+          ],
+          "rows": [
+            [
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "Build"
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "the local cache"
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "yes"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "Stage"
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "a new release dir"
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "yes"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "Swap"
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "the live symlink"
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "yes, by re-flipping"
+                  }
+                ]
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "verification",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Verification"
+          }
+        ]
+      },
+      {
+        "kind": "tasklist",
+        "items": [
+          {
+            "checked": true,
+            "spans": [
+              {
+                "kind": "text",
+                "text": "The build produced an image tagged with the content hash."
+              }
+            ]
+          },
+          {
+            "checked": true,
+            "spans": [
+              {
+                "kind": "text",
+                "text": "The staged release directory exists beside the live one."
+              }
+            ]
+          },
+          {
+            "spans": [
+              {
+                "kind": "text",
+                "text": "The live symlink points at the new release."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "paragraph",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Check the published shape against "
+          },
+          {
+            "kind": "link",
+            "href": "example-contract.yaml",
+            "rel": "artifact",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "the contract"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": " before calling the deploy done."
+          }
+        ]
+      },
+      {
+        "kind": "heading",
+        "level": 2,
+        "id": "changelog",
+        "spans": [
+          {
+            "kind": "text",
+            "text": "Changelog"
+          }
+        ]
+      },
+      {
+        "kind": "table",
+        "table": {
+          "header": [
+            {
+              "spans": [
+                {
+                  "kind": "text",
+                  "text": "Date"
+                }
+              ]
+            },
+            {
+              "spans": [
+                {
+                  "kind": "text",
+                  "text": "Change"
+                }
+              ]
+            }
+          ],
+          "rows": [
+            [
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "2026-08-25"
+                  }
+                ]
+              },
+              {
+                "spans": [
+                  {
+                    "kind": "text",
+                    "text": "Fixture created so the flagship parse test runs without a consumer tree."
+                  }
+                ]
+              }
+            ]
+          ]
+        }
+      }
+    ],
+    "related": [
+      {
+        "title": "Fixture wiki document",
+        "href": "../wiki/knowledge-tree-contract.md",
+        "rel": "doc",
+        "desc": "the method this runbook operationalizes."
+      },
+      {
+        "spans": [
+          {
+            "kind": "link",
+            "href": "https://example.com/",
+            "rel": "external",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "Upstream reference"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "text": " - an external link, left unresolved by the classifier."
+          }
+        ]
+      },
+      {
+        "spans": [
+          {
+            "kind": "text",
+            "text": "R8 (steps blocks) - a plain bullet that is not a document link."
+          }
+        ]
+      }
+    ],
+    "details": [
+      {
+        "id": "why-the-build-is-hermetic",
+        "title": "Why the build is hermetic",
+        "source": "Makefile",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "A hermetic build pins every input - toolchain, dependencies, build flags - so the same source produces the same artifact on any machine. Without it, \"works on my machine\" becomes a deploy-time surprise."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "how-the-swap-stays-atomic",
+        "title": "How the swap stays atomic",
+        "source": "scripts/deploy.sh",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "spans": [
+              {
+                "kind": "text",
+                "text": "The new release is staged in full beside the live tree, then a single "
+              },
+              {
+                "kind": "code",
+                "text": "rename"
+              },
+              {
+                "kind": "text",
+                "text": " replaces the symlink. A rename is atomic on the filesystem, so a concurrent reader sees either the old tree or the new one, never a mixture."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "findings": null
+}
