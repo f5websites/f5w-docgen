@@ -1,0 +1,20 @@
+{
+  "title": "Fixture knowledge tree",
+  "topbarTitle": "Fixture knowledge tree",
+  "groups": [
+    {"name": "Method", "docs": ["wiki/knowledge-tree-contract"]},
+    {"name": "Runbooks", "docs": ["frameworks/example-runbook"]}
+  ],
+  "artifacts": [
+    {
+      "path": "frameworks/example-contract.yaml",
+      "title": "Example contract",
+      "lede": "A non-markdown artifact, so the loader validates an artifact entry end to end.",
+      "extract": "info.version"
+    }
+  ],
+  "docOptions": {
+    "frameworks/example-runbook": {"fold": "h3"}
+  },
+  "changelog": {"heading": "Changelog"}
+}

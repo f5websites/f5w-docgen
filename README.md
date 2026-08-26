@@ -76,10 +76,24 @@ make docs-deploy    # deploy to docs.f5w.nl/f5w-docgen (Mac-only, remote-only)
 ```
 
 The repo dogfoods its generator: `knowledge/` is built with the current
-source (stamped `(devel)`), and CI lints it on every push. Three tests read a
-consuming repo's live knowledge tree and skip when it is absent (by design -
-the generator stays repo-neutral). The browser runtime (`assets/runtime.js`)
-has no automated JS tests; `CHECKLIST.md` is the manual gate.
+source (stamped `(devel)`), and CI lints it on every push.
+
+Three contract tests read a whole knowledge tree rather than a single-construct
+fixture. By default - and always in CI - that is the small checked-in tree at
+`internal/testdata/seed/`, so the tests stay covered in a repo that ships no
+consumer. Point them at a real consumer's tree to run the stronger check:
+
+```sh
+F5W_DOCGEN_LIVE_TREE=~/Code/<consumer>/knowledge go test ./...
+```
+
+Against a live tree they assert parse health only, never a golden: this repo
+does not own that content, so a reworded paragraph there is not a defect here.
+A named path that is not a knowledge tree fails loudly rather than silently
+falling back to the fixture.
+
+The browser runtime (`assets/runtime.js`) has no automated JS tests;
+`CHECKLIST.md` is the manual gate.
 
 ## Releasing
 

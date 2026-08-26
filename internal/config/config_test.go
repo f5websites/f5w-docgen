@@ -1,10 +1,11 @@
 package config
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/f5websites/f5w-docgen/internal/testenv"
 )
 
 // TestLoad_ValidFixture asserts a well-formed docsite.json over a matching stub
@@ -83,24 +84,26 @@ func TestLoad_Errors(t *testing.T) {
 	}
 }
 
-// TestLoad_LiveSeed asserts the repo's own knowledge/docsite.json parses and
-// validates against the live tree - a contract test keeping the real seed
-// honest. It skips when the tree is absent (e.g. after the generator moves to
-// its own repo per the spec's S9 plan), so the loader stays portable.
-func TestLoad_LiveSeed(t *testing.T) {
-	root := filepath.Join("..", "..", "..", "..", "knowledge")
-	if _, err := os.Stat(filepath.Join(root, ConfigFileName)); err != nil {
-		t.Skipf("live knowledge tree not present (%v); skipping", err)
+// TestLoad_SeedTree asserts a whole tree's docsite.json parses and validates
+// against the tree it describes - a contract test keeping a real seed honest,
+// declared docs and artifacts included. It reads the checked-in fixture tree by
+// default and a consumer's live tree when F5W_DOCGEN_LIVE_TREE names one, so the
+// loader stays portable (spec S9) while keeping its coverage here.
+func TestLoad_SeedTree(t *testing.T) {
+	root, live, err := testenv.KnowledgeRoot()
+	if err != nil {
+		t.Fatal(err)
 	}
+	t.Logf("loading docsite.json at %s (live consumer tree: %t)", root, live)
 
 	cfg, err := Load(root)
 	if err != nil {
-		t.Fatalf("Load(live seed) returned error: %v", err)
+		t.Fatalf("Load(seed tree) returned error: %v", err)
 	}
 	if cfg.Title == "" {
-		t.Error("live seed Title is empty")
+		t.Error("seed tree Title is empty")
 	}
 	if cfg.DocCount() == 0 {
-		t.Error("live seed declares no docs")
+		t.Error("seed tree declares no docs")
 	}
 }
