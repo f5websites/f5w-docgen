@@ -105,3 +105,43 @@ func TestCrossDocLinkResolution(t *testing.T) {
 		t.Errorf("with no known-doc set the classifier must not check presence, got %+v", noSetFindings)
 	}
 }
+
+// TestCrossDocFragmentResolution asserts a cross-doc `#fragment` resolves against
+// the target doc's anchors (R15): an H2 or main-body H3 is a page anchor, a detail
+// node is a card with no page anchor and errors, an unknown slug errors, and with
+// no anchor map the fragment is not checked.
+func TestCrossDocFragmentResolution(t *testing.T) {
+	target := "# Target\n\nLede paragraph.\n\n## Overview\n\nDrills into [the node](#a-node).\n\n" +
+		"### Main sub\n\nBody.\n\n## Details\n\n### A node\n\nNode body.\n"
+	known := map[string]bool{"wiki/target": true, "frameworks/doc": true}
+	anchors := map[string]Anchors{"wiki/target": ScanAnchors([]byte(target))}
+
+	cases := []struct {
+		name      string
+		href      string
+		anchors   map[string]Anchors
+		wantError string // empty means no cross-doc error expected
+	}{
+		{"H2 section resolves", "../wiki/target.md#overview", anchors, ""},
+		{"main-body H3 resolves", "../wiki/target.md#main-sub", anchors, ""},
+		{"no fragment is a plain link", "../wiki/target.md", anchors, ""},
+		{"detail node has no page anchor", "../wiki/target.md#a-node", anchors, "targets a detail node"},
+		{"unknown slug resolves to nothing", "../wiki/target.md#nowhere", anchors, "fragment resolves to no heading"},
+		{"no anchor map skips the check", "../wiki/target.md#nowhere", nil, ""},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			md := "# Doc\n\nLede paragraph.\n\nA [link](" + tc.href + ").\n"
+			_, findings := Parse([]byte(md), Options{DocID: "frameworks/doc", KnownDocs: known, DocAnchors: tc.anchors})
+			if tc.wantError == "" {
+				if hasFinding(findings, LevelError, "cross-doc link") {
+					t.Errorf("expected no cross-doc error, got %+v", findings)
+				}
+				return
+			}
+			if !hasFinding(findings, LevelError, tc.wantError) {
+				t.Errorf("expected an error containing %q, got %+v", tc.wantError, findings)
+			}
+		})
+	}
+}

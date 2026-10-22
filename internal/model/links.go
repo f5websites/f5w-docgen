@@ -68,7 +68,7 @@ func (p *parseState) classifyLink(href string, node ast.Node) LinkRel {
 		return LinkExternal
 	}
 	pathPart, fragment, _ := strings.Cut(href, "#")
-	return p.classifyPath(pathPart, fragment != "", href, node)
+	return p.classifyPath(pathPart, fragment, href, node)
 }
 
 // classifyFragment resolves an in-document `#fragment` (R11): a ref from a detail
@@ -105,11 +105,11 @@ func (p *parseState) classifyFragment(fragment string, node ast.Node) LinkRel {
 // anything else - a repo source file, a cross-repo path - is outside the grammar
 // and a lint error (R18). A fragment into a raw/ file has nothing to anchor to
 // and warns (R17).
-func (p *parseState) classifyPath(pathPart string, hasFragment bool, href string, node ast.Node) LinkRel {
+func (p *parseState) classifyPath(pathPart, fragment, href string, node ast.Node) LinkRel {
 	target := path.Join(p.docDir(), pathPart)
 	switch {
 	case underDir(target, "raw"):
-		if hasFragment {
+		if fragment != "" {
 			p.warn(p.nodeLine(node), fmt.Sprintf(
 				"fragment into raw/ file %q has nothing to anchor to (R17: raw files are not rendered)", href))
 		}
@@ -120,7 +120,7 @@ func (p *parseState) classifyPath(pathPart string, hasFragment bool, href string
 				"cross-doc link %q resolves to no document in the knowledge tree (R15: a link to a file that does not exist is a build error)", href))
 			return LinkBroken
 		}
-		return LinkDoc
+		return p.classifyCrossDocFragment(strings.TrimSuffix(target, ".md"), fragment, href, node)
 	case p.isArtifact(target):
 		return LinkArtifact
 	case target == config.ConfigFileName:
@@ -128,6 +128,31 @@ func (p *parseState) classifyPath(pathPart string, hasFragment bool, href string
 	default:
 		p.fail(p.nodeLine(node), fmt.Sprintf(
 			"link destination %q is outside the allowed grammar (R18: only a knowledge .md, a raw/ file, a declared artifact, the docsite.json config, or https://)", href))
+		return LinkBroken
+	}
+}
+
+// classifyCrossDocFragment resolves a cross-doc link's `#fragment` against the
+// target doc's anchors (R15): an H2 or main-body H3 is a page anchor and resolves;
+// a detail node is a collapsed card with no page anchor, so linking it is an error
+// that points the author at the section drilling into it; anything else resolves
+// to nothing and is an error. A link with no fragment, or a parse with no anchor
+// map, is a plain cross-doc link.
+func (p *parseState) classifyCrossDocFragment(targetID, fragment, href string, node ast.Node) LinkRel {
+	if fragment == "" || p.opts.DocAnchors == nil {
+		return LinkDoc
+	}
+	anchors := p.opts.DocAnchors[targetID]
+	switch {
+	case anchors.Sections[fragment] || anchors.MainH3s[fragment]:
+		return LinkDoc
+	case anchors.Details[fragment]:
+		p.fail(p.nodeLine(node), fmt.Sprintf(
+			"cross-doc link %q targets a detail node; detail cards have no page anchor (R15: link the section that drills into it instead)", href))
+		return LinkBroken
+	default:
+		p.fail(p.nodeLine(node), fmt.Sprintf(
+			"cross-doc link %q: fragment resolves to no heading in the target document (R15)", href))
 		return LinkBroken
 	}
 }

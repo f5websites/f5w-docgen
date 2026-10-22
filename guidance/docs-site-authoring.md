@@ -134,7 +134,9 @@ release-signing runbooks (in that repo's `knowledge/frameworks/`).
   `#section-slug` fragment. They render as cross-document navigation (↗) on
   the site and work natively on GitHub. An explicit link to a file that does
   not exist is a build error - reference future docs in prose with a tracker
-  ID instead.
+  ID instead. A fragment must name an H2 or main-body H3 of the target: a
+  detail node renders as a collapsed card with no page anchor, so a fragment
+  naming one is a build error - link the section that drills into it.
 - **R16 - No auto-linking.** Cross-references are explicit links (R15) or
   they are plain prose - the generator never invents links. A bare
   `knowledge/...` path in prose renders as plain text and lint-warns (nudge
@@ -308,6 +310,7 @@ The generator's lint (same binary, `make docs` runs it first) enforces:
 | Multiple H1s / H1 not first content line | error |
 | Missing lede | error |
 | Explicit link or fragment that does not resolve | error |
+| Cross-doc fragment naming a detail node (R15) | error |
 | Unknown callout tag; unknown reserved-section shape | error |
 | Duplicate detail-node slugs; headings inside node bodies; self-ref | error |
 | Ref targeting a main-body H3 | error |

@@ -31,6 +31,8 @@ jobs:
       - name: Test
         run: go test ./...
       - name: Lint own knowledge tree
-        # Dogfood: the tool's own docs are built with the tool. Three tests
-        # that read a consuming repo's live tree skip here by design.
+        # Dogfood: the tool's own docs are built with the tool. The three
+        # whole-tree contract tests above run against the checked-in fixture
+        # tree (internal/testdata/seed/); a consumer's live tree is opt-in
+        # via F5W_DOCGEN_LIVE_TREE and never runs here.
         run: go run ./cmd/f5w-docgen lint -root knowledge

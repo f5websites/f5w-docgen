@@ -37,6 +37,7 @@ func TestCheck_OnePerRule(t *testing.T) {
 		{"wiki/footnote.md", model.LevelError, "footnote syntax"},
 		{"wiki/bad-link.md", model.LevelError, "outside the allowed grammar"},
 		{"wiki/ghost-link.md", model.LevelError, "resolves to no document"},
+		{"wiki/detail-link.md", model.LevelError, "targets a detail node"},
 		{"wiki/self-ref.md", model.LevelError, "reference itself"},
 		{"wiki/misplaced.md", model.LevelError, "after ## Details"},
 		{"wiki/bare-fence.md", model.LevelWarn, "no language tag"},
@@ -180,8 +181,9 @@ func TestCheck_CyclicOrphanWarns(t *testing.T) {
 
 // violationTree carries one focused contract violation per file. Every doc but
 // unsorted.md is listed in a docsite.json group, so the Unsorted warning is
-// attributable to that one file alone; ghost-link.md points at an absent doc so
-// the cross-doc resolution check has a target to miss.
+// attributable to that one file alone; ghost-link.md points at an absent doc and
+// detail-link.md at another doc's detail node, so the cross-doc resolution check
+// has a target doc and a target fragment to miss.
 var violationTree = map[string]string{
 	"docsite.json": `{
   "title": "violation fixtures",
@@ -191,7 +193,7 @@ var violationTree = map[string]string{
     {"name": "All", "docs": [
       "wiki/multi-h1", "wiki/no-lede", "wiki/unknown-callout", "wiki/dup-node",
       "wiki/node-heading", "wiki/h3-ref", "wiki/footnote", "wiki/bad-link",
-      "wiki/ghost-link", "wiki/self-ref", "wiki/misplaced", "wiki/bare-fence",
+      "wiki/ghost-link", "wiki/detail-link", "wiki/self-ref", "wiki/misplaced", "wiki/bare-fence",
       "wiki/deep-heading", "wiki/orphan", "wiki/bare-path", "wiki/raw-html",
       "wiki/cl-placement", "wiki/cl-notable", "wiki/cl-cap", "wiki/cl-order"
     ]}
@@ -206,6 +208,7 @@ var violationTree = map[string]string{
 	"wiki/footnote.md":        "# Footnote\n\nA lede.\n\nA claim with a ref[^1] to a note.\n",
 	"wiki/bad-link.md":        "# Bad link\n\nA lede.\n\nA [repo file](../../api/Dockerfile) link.\n",
 	"wiki/ghost-link.md":      "# Ghost\n\nA lede.\n\nA [ghost](../wiki/ghost.md) cross-doc link.\n",
+	"wiki/detail-link.md":     "# Detail link\n\nA lede.\n\nA [card](self-ref.md#node) has no page anchor.\n",
 	"wiki/self-ref.md":        "# Self ref\n\nA lede.\n\n## Main\n\nSee [n](#node).\n\n## Details\n\n### Node\n\nLoops back to [self](#node).\n",
 	"wiki/misplaced.md":       "# Misplaced\n\nA lede.\n\n## Section\n\nProse.\n\n## Details\n\n## Stray\n\nA section after Details.\n",
 	"wiki/bare-fence.md":      "# Bare fence\n\nA lede.\n\n```\nan untagged fence\n```\n",
@@ -235,7 +238,7 @@ var cleanTree = map[string]string{
 	"wiki/alpha.md": "# Alpha\n\nA clean lede sentence describing the doc.\n\n" +
 		"## Section\n\nProse, a [drill-down](#a-detail), and a canonical callout:\n\n" +
 		"> [!NOTE]\n> A note.\n\n## Details\n\n### A detail\n\nReferenced above.\n",
-	"wiki/beta.md": "# Beta\n\nAnother clean lede.\n\n## Body\n\nJust prose, with a tagged fence:\n\n```sh\necho hi\n```\n",
+	"wiki/beta.md": "# Beta\n\nAnother clean lede.\n\n## Body\n\nA [cross-doc section](alpha.md#section) link, and a tagged fence:\n\n```sh\necho hi\n```\n",
 	// A conformant changelog: last content section, Date | Change table, within
 	// the cap, newest-first. It must raise nothing under the opt-in.
 	"wiki/gamma.md": "# Gamma\n\nA clean lede for the changelog fixture.\n\n" +
