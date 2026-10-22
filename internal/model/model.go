@@ -218,10 +218,35 @@ type Finding struct {
 // cross-tree knowledge only the caller holds; when it is nil the link classifier
 // grades a cross-doc link's grammar without checking that its target exists, which
 // keeps a single-document parse (a golden-fixture test) free of tree dependence.
+// DocAnchors is the same kind of cross-tree knowledge one level deeper: each
+// doc's anchor sets, keyed by layer-relative ID, so a cross-doc link's
+// `#fragment` is resolved against its target (R15); when it is nil the fragment
+// is not checked.
 type Options struct {
-	DocID     string
-	Artifacts []string
-	KnownDocs map[string]bool
+	DocID      string
+	Artifacts  []string
+	KnownDocs  map[string]bool
+	DocAnchors map[string]Anchors
+}
+
+// Anchors is one document's heading-anchor ids, split by where each heading sits.
+// Sections (main-body H2s) and MainH3s render as page anchors a cross-doc link
+// can land on; Details (the H3 detail nodes under `## Details`) render as
+// collapsed cards with no page anchor, so a cross-doc fragment naming one lands
+// nowhere.
+type Anchors struct {
+	Sections map[string]bool
+	MainH3s  map[string]bool
+	Details  map[string]bool
+}
+
+// ScanAnchors returns a document's anchor sets without walking its body or
+// raising findings - the cheap pre-pass a caller runs over the whole tree to
+// build Options.DocAnchors before parsing each doc in full.
+func ScanAnchors(source []byte) Anchors {
+	p := newParseState(source, Options{})
+	p.scanHeadings(p.parseAST(source))
+	return Anchors{Sections: p.sectionIDs, MainH3s: p.mainH3IDs, Details: p.detailIDs}
 }
 
 // Parse renders one document's markdown into the content model, returning the

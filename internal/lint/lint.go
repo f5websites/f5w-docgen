@@ -11,7 +11,8 @@
 // nodes, footnotes, bare paths); the tree loader raises the document-shell
 // findings (the single H1, the lede); and this package adds the two checks that
 // need the whole tree at once - a doc in no docsite.json group, and a cross-doc
-// link whose target is absent - and merges them all into one sorted list.
+// link whose target doc or target fragment is absent - and merges them all into
+// one sorted list.
 package lint
 
 import (
@@ -65,12 +66,15 @@ func Check(root string) (Result, error) {
 	var findings []Finding
 	findings = append(findings, shellFindings(treeErr)...)
 
-	known := docIDSet(docs)
-	artifacts := artifactPaths(cfg)
-	changelogHeading := cfg.ChangelogHeading()
-	running := version.Version()
+	facts := treeFacts{
+		artifacts:        artifactPaths(cfg),
+		known:            docIDSet(docs),
+		anchors:          docAnchors(docs),
+		changelogHeading: cfg.ChangelogHeading(),
+		running:          version.Version(),
+	}
 	for _, doc := range docs {
-		findings = append(findings, docFindings(doc, artifacts, known, changelogHeading, running)...)
+		findings = append(findings, docFindings(doc, facts)...)
 	}
 	findings = append(findings, unsortedFindings(cfg, docs)...)
 
@@ -88,32 +92,44 @@ func Check(root string) (Result, error) {
 // Per-document findings
 // -------------------------------------------------------------------------
 
+// treeFacts is the whole-tree knowledge every per-document check grades
+// against, gathered once per lint run: the declared artifacts (an artifact
+// reference vs an illegal file link, R22/R18), the known-doc set and each doc's
+// anchors (a cross-doc link whose target doc or fragment is absent, R15), the
+// changelog heading (empty when the R26 opt-in is off), and the tool's own
+// running version (the guidance-stamp drift check).
+type treeFacts struct {
+	artifacts        []string
+	known            map[string]bool
+	anchors          map[string]model.Anchors
+	changelogHeading string
+	running          string
+}
+
 // docFindings parses one document's body and returns its findings tagged with the
-// file they belong to. The model does the detection; the known-doc set lets its
-// link classifier reject a cross-doc link whose target is absent (R15), and the
-// declared artifacts let it tell an artifact reference from an illegal file link.
-// When the changelog opt-in is on (a non-empty heading), the parsed body is also
-// checked against the R26 changelog-section rules. running is the tool's own
-// version, which the guidance-stamp drift check compares against.
-func docFindings(doc tree.Doc, artifacts []string, known map[string]bool, changelogHeading, running string) []Finding {
+// file they belong to. The model does the detection against the tree facts; when
+// the changelog opt-in is on, the parsed body is also checked against the R26
+// changelog-section rules, and the source is checked for guidance-stamp drift.
+func docFindings(doc tree.Doc, facts treeFacts) []Finding {
 	source, err := os.ReadFile(doc.Path)
 	if err != nil {
 		return []Finding{{File: doc.Path, Line: 1, Level: model.LevelError, Message: err.Error()}}
 	}
 	parsed, raised := model.Parse(source, model.Options{
-		DocID:     doc.ID,
-		Artifacts: artifacts,
-		KnownDocs: known,
+		DocID:      doc.ID,
+		Artifacts:  facts.artifacts,
+		KnownDocs:  facts.known,
+		DocAnchors: facts.anchors,
 	})
 
 	findings := make([]Finding, 0, len(raised))
 	for _, f := range raised {
 		findings = append(findings, Finding{File: doc.Path, Line: f.Line, Level: f.Level, Message: f.Message})
 	}
-	if changelogHeading != "" {
-		findings = append(findings, changelogFindings(parsed, changelogHeading, doc.Path)...)
+	if facts.changelogHeading != "" {
+		findings = append(findings, changelogFindings(parsed, facts.changelogHeading, doc.Path)...)
 	}
-	findings = append(findings, driftFindings(source, doc.Path, running)...)
+	findings = append(findings, driftFindings(source, doc.Path, facts.running)...)
 	return findings
 }
 
@@ -206,6 +222,22 @@ func docIDSet(docs []tree.Doc) map[string]bool {
 		set[doc.ID] = true
 	}
 	return set
+}
+
+// docAnchors maps every discovered doc's layer-relative ID to its anchor sets,
+// the tree knowledge the model's cross-doc fragment check resolves against (R15).
+// An unreadable doc is skipped here: docFindings reports the read error itself,
+// and links into it then resolve to no heading.
+func docAnchors(docs []tree.Doc) map[string]model.Anchors {
+	anchors := make(map[string]model.Anchors, len(docs))
+	for _, doc := range docs {
+		source, err := os.ReadFile(doc.Path)
+		if err != nil {
+			continue
+		}
+		anchors[doc.ID] = model.ScanAnchors(source)
+	}
+	return anchors
 }
 
 // artifactPaths is the list of declared artifact paths, which the model's link
