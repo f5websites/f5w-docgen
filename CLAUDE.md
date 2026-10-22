@@ -123,7 +123,9 @@ This protocol applies when ending a Beads implementation workflow. It is subordi
 
 - **Beads is the durable, cross-session backlog.** Every concrete deliverable -
   a feature, a bug, a doc, a finding worth keeping - lives in a bead. Source of
-  truth for "what work exists in this project." Issue prefix: `f5w-docgen-<hash>`.
+  truth for "what work exists in this project." Issue prefix: `docgen-<hash>`
+  (renamed from `f5w-docgen-` on 2026-10-22 so bead IDs read apart from the
+  product name).
 - **TaskCreate / TodoWrite is the ephemeral in-session checklist.** Useful for
   sub-steps inside one bead. Disappears when the session ends. Mark items
   in_progress / completed so Frank can follow along.
