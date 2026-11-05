@@ -145,8 +145,9 @@ This protocol applies when ending a Beads implementation workflow. It is subordi
   truncated at any width, so a long one genuinely runs off the screen in
   `bd list`; keep titles under ~60 to hold a row inside 80 columns. (Measured on
   bd 1.1.2, 2026-08-17.)
-- **Always pass `workspace_root: "/Users/frank/Code/f5w-docgen"`** on every
-  beads MCP call so it resolves the right `.beads/` database.
+- **Use the `bd` CLI, scoped with `bd -C "/Users/frank/Code/f5w-docgen"`.** Recipes for claims,
+  notes, sync and batches: "Beads CLI" in `~/.claude/CLAUDE.md`. The beads MCP
+  was retired on 2026-11-05.
 - **Never mutate without citing why.** Every create / update / close includes a
   reason tied to a file path, a doc decision, or chat context.
 - The managed block's generic "do NOT use TaskCreate / use bd remember" line is
@@ -156,8 +157,8 @@ This protocol applies when ending a Beads implementation workflow. It is subordi
 ### Advise the next bead at handoff
 
 When you finish a bead, end the final summary with a recommendation of which
-bead to pick up next. Consult the open backlog (`bd ready` /
-`mcp__beads__ready`, falling back to `bd list --status=open`) and name the most
+bead to pick up next. Consult the open backlog (`bd ready`,
+falling back to `bd list --status=open`) and name the most
 sensible next bead - respecting dependencies and priority - with a one-line
 rationale; mention a runner-up if the choice is close. When nothing is ready,
 say so rather than inventing a suggestion.
